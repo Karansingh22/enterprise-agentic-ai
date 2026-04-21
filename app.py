@@ -1,0 +1,130 @@
+import streamlit as st
+from config import COMPANY, ROLE_ACCESS, MOCK_USERS
+from agents.orchestrator import KaranAgenticRAG
+
+# ── Page config ──────────────────────────────────────────────────────────────
+st.set_page_config(
+    page_title=f"{COMPANY} — Agentic RAG",
+    page_icon="🏢",
+    layout="wide",
+)
+
+# ── Session-state init ────────────────────────────────────────────────────────
+for key, default in {
+    "logged_in": False,
+    "user_data": None,
+    "messages":  None,
+}.items():
+    if key not in st.session_state:
+        st.session_state[key] = default
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 1. AUTHENTICATION
+# ═══════════════════════════════════════════════════════════════════════════════
+if not st.session_state["logged_in"]:
+    st.title(f"🏢 {COMPANY} — Secure Portal")
+    st.markdown("Log in with your corporate credentials to access the RAG system.")
+
+    with st.form("login_form"):
+        email    = st.text_input("Corporate Email")
+        password = st.text_input("Password", type="password")
+        submit   = st.form_submit_button("Login")
+
+        if submit:
+            record = MOCK_USERS.get(email.strip())
+            if record and record["password"] == password:
+                st.session_state["logged_in"] = True
+                st.session_state["user_data"] = record
+                st.session_state["messages"]  = []
+                st.rerun()
+            else:
+                st.error("❌ Invalid corporate email or password.")
+    st.stop()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 2. MAIN INTERFACE
+# ═══════════════════════════════════════════════════════════════════════════════
+user    = st.session_state["user_data"]
+role    = user["role"]
+
+# ── Sidebar ───────────────────────────────────────────────────────────────────
+with st.sidebar:
+    st.header("🔐 Security Context")
+    st.success(f"**{user['name']}**")
+    st.code(f"Role: {role}")
+    st.info(
+        f"Pinecone ACL filter is locked to: "
+        f"`{{category: {{$in: {ROLE_ACCESS.get(role, [])}}} }}`"
+    )
+
+    if st.button("Logout"):
+        for k in ["logged_in", "user_data", "messages"]:
+            st.session_state[k] = None if k == "user_data" else (
+                False if k == "logged_in" else []
+            )
+        st.rerun()
+
+    st.divider()
+    st.markdown("""
+**Architecture:**
+- **Guardrails:** Topic block + PII masking
+- **Agent API:** `langchain.agents.create_agent`
+- **Memory:** `InMemoryStore` (long-term)
+- **Vector DB:** Pinecone Serverless (cosine)
+- **LLM:** Gemini 2.0 Flash
+    """)
+
+# ── Page header ───────────────────────────────────────────────────────────────
+st.title(f"🏢 {COMPANY} — Enterprise Agentic RAG")
+st.caption(
+    f"Welcome back, **{user['name']}** · Role: `{role}` · "
+    f"Access: `{ROLE_ACCESS.get(role, [])}`"
+)
+
+# ── Load agent (cached per session) ──────────────────────────────────────────
+@st.cache_resource
+def load_agent():
+    try:
+        return KaranAgenticRAG()
+    except Exception as e:
+        st.error(f"Initialisation error: {e}")
+        st.stop()
+
+agent = load_agent()
+
+# ── Initialise chat history ───────────────────────────────────────────────────
+if not st.session_state["messages"]:
+    st.session_state["messages"] = [
+        {
+            "role":    "assistant",
+            "content": f"Hello {user['name']}! I'm your internal assistant. "
+                       f"Ask me anything about Karan Systems policies, "
+                       f"incidents, or IT/HR processes.",
+        }
+    ]
+
+# ── Render existing chat ──────────────────────────────────────────────────────
+for msg in st.session_state["messages"]:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+# ── Query input ───────────────────────────────────────────────────────────────
+if prompt := st.chat_input("Ask about policies, incidents, or IT/HR processes…"):
+    # Append user message
+    st.session_state["messages"].append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    # Build assistant response
+    with st.chat_message("assistant"):
+        with st.spinner("Retrieving from Pinecone and reasoning…"):
+            # Pass prior history (all messages except the last user turn)
+            chat_history = st.session_state["messages"][:-1]
+            response = agent.query(
+                user_query=prompt,
+                chat_history=chat_history,
+                role=role,
+            )
+        st.markdown(response)
+
+    st.session_state["messages"].append({"role": "assistant", "content": response})

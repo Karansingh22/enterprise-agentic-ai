@@ -1,0 +1,32 @@
+[project]
+name = "karan-rag"
+version = "1.0.0"
+description = "Karan Systems Secure Agentic RAG — create_agent + Pinecone + Gemini"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "langchain>=0.3.25",
+    "langchain-core>=0.3.55",
+    "langchain-community>=0.3.20",
+    "langchain-text-splitters>=0.3.8",
+    "langgraph>=0.2.70",
+    "langgraph-checkpoint>=2.0.10",
+    "langchain-google-genai>=2.0.11",
+    "langchain-pinecone>=0.2.4",
+    "pinecone>=5.4.2",
+    "gdown>=5.2.0",
+    "google-api-python-client>=2.145.0",
+    "google-auth-httplib2>=0.2.0",
+    "google-auth-oauthlib>=1.2.1",
+    "pypdf>=4.3.0",
+    "python-pptx>=1.0.2",
+    "openpyxl>=3.1.5",
+    "unstructured>=0.16.10",
+    "python-docx>=1.1.2",
+    "streamlit>=1.40.0",
+    "python-dotenv>=1.0.1",
+    "rich>=13.9.4",
+    "pandas>=2.2.3",
+    "tabulate>=0.9.0",
+    "tqdm>=4.67.1",
+]
