@@ -70,7 +70,7 @@ cp .env.example .env
 Your `.env` file:
 ```
 GOOGLE_API_KEY=AIzaSy...your_key_here
-GEMINI_MODEL=gemini-1.5-flash
+GEMINI_MODEL=gemini-2.5-flash
 GEMINI_EMBEDDING_MODEL=models/embedding-001
 ```
 
@@ -81,7 +81,7 @@ python ingest.py
 ```
 
 This will:
-- Load all 22 source files (MD, TXT, XLSX, DOCX, PPTX)
+- Load all source files (MD, TXT, XLSX, DOCX, PPTX)
 - Split into overlapping chunks (800 chars, 150 overlap)
 - Generate Gemini embeddings for each chunk
 - Store everything in ChromaDB (persisted in `chroma_db/`)
