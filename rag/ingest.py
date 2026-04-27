@@ -121,10 +121,10 @@ def _collect_drive_urls(service, folder_id: str,
 def ensure_pinecone_index(pc: Pinecone) -> None:
     existing = [idx.name for idx in pc.list_indexes()]
     if PINECONE_INDEX_NAME not in existing:
-        print(f"🆕  Creating index '{PINECONE_INDEX_NAME}' (dim=768, cosine)…")
+        print(f"🆕  Creating index '{PINECONE_INDEX_NAME}' (dim=3072, cosine)…")
         pc.create_index(
             name=PINECONE_INDEX_NAME,
-            dimension=768,          # Gemini embedding-001 output dimension
+            dimension=3072,         # Gemini gemini-embedding-001 output dimension
             metric="cosine",
             spec=ServerlessSpec(cloud="aws", region="us-east-1"),
         )

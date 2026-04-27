@@ -71,7 +71,7 @@ Your `.env` file:
 ```
 GOOGLE_API_KEY=AIzaSy...your_key_here
 GEMINI_MODEL=gemini-2.5-flash
-GEMINI_EMBEDDING_MODEL=models/embedding-001
+GEMINI_EMBEDDING_MODEL=models/text-embedding-004
 ```
 
 ### 4. Ingest all documents into ChromaDB
