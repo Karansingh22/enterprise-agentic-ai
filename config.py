@@ -11,7 +11,7 @@ GOOGLE_API_KEY   = os.getenv("GOOGLE_API_KEY")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 
 # ── Model Configuration ──────────────────────────────────────
-GEMINI_MODEL       = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+GEMINI_MODEL       = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 GEMINI_EMBED_MODEL = os.getenv("GEMINI_EMBEDDING_MODEL", "models/gemini-embedding-001")
 
 # ── Vector Store Configuration ───────────────────────────────
