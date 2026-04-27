@@ -17,3 +17,4 @@ tests/*
 
 Rag_arch.jpeg
 rag_chain.py
+test_pinecone.py
