@@ -79,7 +79,6 @@ def download_from_gdrive(folder_id: str, dest_dir: str) -> Dict[str, str]:
         output=dest_dir,
         quiet=False,
         use_cookies=False,
-        remaining_ok=True,
     )
 
     # ── Map local paths to their Drive URLs ──────────────────────────────

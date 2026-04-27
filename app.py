@@ -52,10 +52,7 @@ with st.sidebar:
     st.header("🔐 Security Context")
     st.success(f"**{user['name']}**")
     st.code(f"Role: {role}")
-    st.info(
-        f"Pinecone ACL filter is locked to: "
-        f"`{{category: {{$in: {ROLE_ACCESS.get(role, [])}}} }}`"
-    )
+
 
     if st.button("Logout"):
         for k in ["logged_in", "user_data", "messages"]:
@@ -64,21 +61,12 @@ with st.sidebar:
             )
         st.rerun()
 
-    st.divider()
-    st.markdown("""
-**Architecture:**
-- **Guardrails:** Topic block + PII masking
-- **Agent API:** `langchain.agents.create_agent`
-- **Memory:** `InMemoryStore` (long-term)
-- **Vector DB:** Pinecone Serverless (cosine)
-- **LLM:** Gemini 2.0 Flash
-    """)
+
 
 # ── Page header ───────────────────────────────────────────────────────────────
 st.title(f"🏢 {COMPANY} — Enterprise Agentic RAG")
 st.caption(
-    f"Welcome back, **{user['name']}** · Role: `{role}` · "
-    f"Access: `{ROLE_ACCESS.get(role, [])}`"
+    f"Welcome back, **{user['name']}** · Role: `{role}`"
 )
 
 # ── Load agent (cached per session) ──────────────────────────────────────────

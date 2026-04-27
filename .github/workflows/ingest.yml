@@ -9,6 +9,8 @@ jobs:
   ingest-to-pinecone:
     if: github.repository != '' # prevent running on forks by default if needed
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     
     steps:
       - name: 🚀 Checkout Repository

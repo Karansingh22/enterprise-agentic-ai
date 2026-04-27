@@ -19,7 +19,6 @@ from config import GEMINI_MODEL, GOOGLE_API_KEY
 from prompts.system_prompts import ORCHESTRATOR_SYSTEM_PROMPT
 from tools.incident_tools import get_kb_search_tool
 from guardrails.safety import check_topic_allowed, scrub_pii
-from agents.classifier import classify_intent
 
 
 class KaranAgenticRAG:
@@ -104,18 +103,8 @@ class KaranAgenticRAG:
         # ── 2. PII Scrub ───────────────────────────────────────
         safe_query = scrub_pii(user_query)
 
-        # ── 3. Intent Classification ───────────────────────────
-        intent = classify_intent(safe_query)
-
-        if intent == "NOISE":
-            return (
-                "This appears to be a known transient incident (network blip, "
-                "VPN hiccup, temporary lock-out).  It will resolve automatically "
-                "within a few minutes.  No RCA or manual action is needed."
-            )
-
-        # Prepend intent context so agent reasons correctly
-        contextualized_query = f"[Intent: {intent}]  {safe_query}"
+        # ── 3. Skip Intent Classification to save LLM calls ────
+        contextualized_query = safe_query
 
         # ── 4. Build agent with correct ACL role ───────────────
         agent = self._build_agent(role=role)
