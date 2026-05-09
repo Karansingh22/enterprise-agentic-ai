@@ -54,7 +54,7 @@ MOCK_USERS = {
         "password": "karan",
         "role":    "it_admin",
         "user_id": "EMP_001",
-        "name":    "Karan Singh Thakur",
+        "name":    "Karan Singh",
     },
     "employee@karansystems.in": {
         "password": "password123",
