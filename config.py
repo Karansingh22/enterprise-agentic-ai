@@ -13,7 +13,7 @@ PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 
 # -- Model Configuration --------------------------------------
 GEMINI_MODEL       = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
-GEMINI_EMBED_MODEL = os.getenv("GEMINI_EMBEDDING_MODEL", "models/gemini-embedding-001")
+GEMINI_EMBED_MODEL = "models/gemini-embedding-001" # Forced to bypass any deprecated secrets
 
 # -- Vector Store Configuration -------------------------------
 PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "karan-systems-data")
