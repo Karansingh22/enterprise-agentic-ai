@@ -22,15 +22,15 @@ from config import (
 )
 
 
-# ── Shared embeddings factory ─────────────────────────────────────────────────
+# -- Shared embeddings factory -------------------------------------------------
 
 def get_embeddings(task_type: str = "retrieval_query") -> GoogleGenerativeAIEmbeddings:
     """
     Returns a Gemini embeddings model.
 
     task_type:
-      "retrieval_query"    — used at query time (agent tools)
-      "retrieval_document" — used at ingest time (upsert)
+      "retrieval_query"    -- used at query time (agent tools)
+      "retrieval_document" -- used at ingest time (upsert)
     """
     if not GOOGLE_API_KEY:
         raise ValueError("GOOGLE_API_KEY is missing from environment.")
@@ -41,7 +41,7 @@ def get_embeddings(task_type: str = "retrieval_query") -> GoogleGenerativeAIEmbe
     )
 
 
-# ── Query-time helpers ────────────────────────────────────────────────────────
+# -- Query-time helpers --------------------------------------------------------
 
 def get_vectorstore() -> PineconeVectorStore:
     """Opens a read connection to the existing Pinecone index."""
@@ -75,18 +75,18 @@ def get_retriever(role_filter: Optional[str] = None):
     return get_vectorstore().as_retriever(search_kwargs=search_kwargs)
 
 
-# ── Ingest-time helper ────────────────────────────────────────────────────────
+# -- Ingest-time helper --------------------------------------------------------
 
 def upload_to_pinecone(chunks: List[Document]) -> None:
     """
     Batch-upserts all chunks into Pinecone.
-    Called only by ingest.py — not used at query time.
+    Called only by ingest.py -- not used at query time.
     """
     if not chunks:
-        print("⚠️   No chunks to upload — skipping.")
+        print("[WARN] No chunks to upload -- skipping.")
         return
 
-    print(f"\n🚀  Upserting {len(chunks)} chunks → '{PINECONE_INDEX_NAME}'…")
+    print(f"\n[UPLOAD] Upserting {len(chunks)} chunks -> '{PINECONE_INDEX_NAME}'...")
     PineconeVectorStore.from_documents(
         documents=chunks,
         embedding=get_embeddings(task_type="retrieval_document"),
@@ -94,4 +94,4 @@ def upload_to_pinecone(chunks: List[Document]) -> None:
         pinecone_api_key=PINECONE_API_KEY,
         namespace=PINECONE_NAMESPACE or None,
     )
-    print("✅  Upsert complete.\n")
+    print("[OK] Upsert complete.\n")

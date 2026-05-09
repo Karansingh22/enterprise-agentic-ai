@@ -2,27 +2,37 @@ import streamlit as st
 from config import COMPANY, ROLE_ACCESS, MOCK_USERS
 from agents.orchestrator import KaranAgenticRAG
 
-# ── Page config ──────────────────────────────────────────────────────────────
+# -- Page config --------------------------------------------------------------
 st.set_page_config(
-    page_title=f"{COMPANY} — Agentic RAG",
-    page_icon="🏢",
+    page_title=f"{COMPANY} -- Agentic RAG",
+    page_icon="[CORP]",
     layout="wide",
 )
 
-# ── Session-state init ────────────────────────────────────────────────────────
+# -- Session-state init --------------------------------------------------------
+_SESSION_VERSION = 3  # bump when MOCK_USERS or auth logic changes
+
 for key, default in {
     "logged_in": False,
     "user_data": None,
     "messages":  None,
+    "session_version": 0,
 }.items():
     if key not in st.session_state:
         st.session_state[key] = default
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# Auto-invalidate stale sessions from previous config versions
+if st.session_state.get("session_version", 0) != _SESSION_VERSION:
+    st.session_state["logged_in"] = False
+    st.session_state["user_data"] = None
+    st.session_state["messages"] = None
+    st.session_state["session_version"] = _SESSION_VERSION
+
+# ===============================================================================
 # 1. AUTHENTICATION
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 if not st.session_state["logged_in"]:
-    st.title(f"🏢 {COMPANY} — Secure Portal")
+    st.title(f"[CORP] {COMPANY} -- Secure Portal")
     st.markdown("Log in with your corporate credentials to access the RAG system.")
 
     with st.form("login_form"):
@@ -38,16 +48,16 @@ if not st.session_state["logged_in"]:
                 st.session_state["messages"]  = []
                 st.rerun()
             else:
-                st.error("❌ Invalid corporate email or password.")
+                st.error("[ERROR] Invalid corporate email or password.")
     st.stop()
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 # 2. MAIN INTERFACE
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 user    = st.session_state["user_data"]
 role    = user["role"]
 
-# ── Sidebar ───────────────────────────────────────────────────────────────────
+# -- Sidebar -------------------------------------------------------------------
 with st.sidebar:
     st.header("🔐 Security Context")
     st.success(f"**{user['name']}**")
@@ -63,13 +73,13 @@ with st.sidebar:
 
 
 
-# ── Page header ───────────────────────────────────────────────────────────────
-st.title(f"🏢 {COMPANY} — Enterprise Agentic RAG")
+# -- Page header ---------------------------------------------------------------
+st.title(f"[CORP] {COMPANY} -- Enterprise Agentic RAG")
 st.caption(
     f"Welcome back, **{user['name']}** · Role: `{role}`"
 )
 
-# ── Load agent (cached per session) ──────────────────────────────────────────
+# -- Load agent (cached per session) ------------------------------------------
 @st.cache_resource
 def load_agent():
     try:
@@ -80,7 +90,7 @@ def load_agent():
 
 agent = load_agent()
 
-# ── Initialise chat history ───────────────────────────────────────────────────
+# -- Initialise chat history ---------------------------------------------------
 if not st.session_state["messages"]:
     st.session_state["messages"] = [
         {
@@ -91,13 +101,13 @@ if not st.session_state["messages"]:
         }
     ]
 
-# ── Render existing chat ──────────────────────────────────────────────────────
+# -- Render existing chat ------------------------------------------------------
 for msg in st.session_state["messages"]:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# ── Query input ───────────────────────────────────────────────────────────────
-if prompt := st.chat_input("Ask about policies, incidents, or IT/HR processes…"):
+# -- Query input ---------------------------------------------------------------
+if prompt := st.chat_input("Ask about policies, incidents, or IT/HR processes..."):
     # Append user message
     st.session_state["messages"].append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -105,7 +115,7 @@ if prompt := st.chat_input("Ask about policies, incidents, or IT/HR processes…
 
     # Build assistant response
     with st.chat_message("assistant"):
-        with st.spinner("Retrieving from Pinecone and reasoning…"):
+        with st.spinner("Retrieving from Pinecone and reasoning..."):
             # Pass prior history (all messages except the last user turn)
             chat_history = st.session_state["messages"][:-1]
             response = agent.query(

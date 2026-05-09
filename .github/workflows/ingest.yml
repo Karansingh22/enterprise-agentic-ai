@@ -9,15 +9,13 @@ jobs:
   ingest-to-pinecone:
     if: github.repository != '' # prevent running on forks by default if needed
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     
     steps:
       - name: 🚀 Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 🐍 Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -33,6 +31,7 @@ jobs:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
           GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+          PINECONE_INDEX_NAME: karan-systems-data
         run: |
           # Set PYTHONPATH so the config.py and rag/ modules can be found
           PYTHONPATH=. python rag/ingest.py

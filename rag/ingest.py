@@ -1,13 +1,13 @@
 """
-ingest.py — Karan Systems Ingestion Pipeline (Orchestrator)
+ingest.py -- Karan Systems Ingestion Pipeline (Orchestrator)
 ============================================================
 This file ONLY handles:
-  1. DOWNLOAD  → Pull folder from Google Drive into a temp directory
-  2. CLEANUP   → Delete temp directory when done (or on error)
+  1. DOWNLOAD  -> Pull folder from Google Drive into a temp directory
+  2. CLEANUP   -> Delete temp directory when done (or on error)
 
 All parsing, chunking, embedding, and uploading is delegated to:
-  - rag/chunking.py   → load + split + attach metadata
-  - rag/retrieval.py  → embed + upsert to Pinecone
+  - rag/chunking.py   -> load + split + attach metadata
+  - rag/retrieval.py  -> embed + upsert to Pinecone
 
 Usage:
   python ingest.py           # download from Drive, ingest, cleanup
@@ -35,107 +35,113 @@ from rag.chunking import process_directory
 from rag.retrieval import upload_to_pinecone
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# STEP 1 — Download from Google Drive
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
+# STEP 1 -- Download from Google Drive
+# ===============================================================================
 
 def download_from_gdrive(folder_id: str, dest_dir: str) -> Dict[str, str]:
     """
     Downloads the entire public Google Drive folder into `dest_dir`.
 
     Returns:
-        {local_file_path_str: google_drive_webViewLink}
+        {local_file_path_str: google_drive_file_view_url}
         Used by rag/chunking.py to attach source_url metadata per chunk.
 
-    Tries the Drive API first for per-file URLs.
-    Falls back to the folder URL if the API is unavailable.
+    Uses gdown's skip_download to pre-fetch per-file IDs, then downloads.
     """
     try:
         import gdown
     except ImportError:
-        print("❌  gdown not installed. Run: uv add gdown")
+        print("ERROR: gdown not installed. Run: pip install gdown")
         sys.exit(1)
 
-    # ── Try to collect per-file Drive URLs ───────────────────────────────
-    file_url_map: Dict[str, str] = {}   # filename → webViewLink
+    # -- Step 1: List all files to get per-file Drive IDs -----------------
+    file_url_map: Dict[str, str] = {}   # relative_path -> Drive view URL
     try:
-        from googleapiclient.discovery import build
-        service = build(
-            "drive", "v3",
-            developerKey=GOOGLE_API_KEY,
-            cache_discovery=False,
+        file_list = gdown.download_folder(
+            id=folder_id, skip_download=True, quiet=True,
         )
-        _collect_drive_urls(service, folder_id, file_url_map)
-        print(f"ℹ️   Drive API: resolved {len(file_url_map)} file URLs.\n")
+        for entry in file_list:
+            fid = getattr(entry, "id", "")
+            fpath = getattr(entry, "path", "")
+            if fid and fpath:
+                file_url_map[fpath] = f"https://drive.google.com/file/d/{fid}/view"
+        print(f"    Resolved {len(file_url_map)} per-file Drive URLs.\n")
     except Exception as e:
-        print(f"ℹ️   Drive API unavailable ({e}). Falling back to folder URL.\n")
+        print(f"    Could not list per-file URLs ({e}). Falling back to folder URL.\n")
 
-    # ── Download all files ────────────────────────────────────────────────
-    print(f"📥  Downloading Google Drive folder → {dest_dir}")
+    # -- Step 2: Download all files ---------------------------------------
+    print(f"    Downloading Google Drive folder -> {dest_dir}")
     print(f"    {GDRIVE_FOLDER_URL}\n")
 
-    gdown.download_folder(
-        id=folder_id,
-        output=dest_dir,
-        quiet=False,
-        use_cookies=False,
-    )
+    try:
+        gdown.download_folder(
+            id=folder_id,
+            output=dest_dir,
+            quiet=False,
+        )
+    except Exception as e:
+        print(f"    gdown failed: {e}")
+        print("    Falling back to local 'data/' directory for CI/CD.")
+        local_data_dir = Path(__file__).resolve().parent.parent / "data"
+        if local_data_dir.exists():
+            shutil.copytree(local_data_dir, dest_dir, dirs_exist_ok=True)
+            print("    Copied local data directory for ingestion.")
+        else:
+            raise RuntimeError(f"Local fallback 'data/' not found. Gdown error was: {e}")
 
-    # ── Map local paths to their Drive URLs ──────────────────────────────
+    # -- Step 3: Map local paths to their Drive URLs ----------------------
     result: Dict[str, str] = {}
     for local_path in Path(dest_dir).rglob("*"):
         if local_path.is_file():
-            url = file_url_map.get(local_path.name, GDRIVE_FOLDER_URL)
+            # Match by relative path within the download dir
+            rel = str(local_path.relative_to(dest_dir))
+            url = file_url_map.get(rel, "")
+            # Also try matching with forward slashes
+            if not url:
+                rel_fwd = rel.replace("\\", "/")
+                for key, val in file_url_map.items():
+                    if key.replace("\\", "/") == rel_fwd:
+                        url = val
+                        break
+            # Also try matching by filename only (last resort before folder URL)
+            if not url:
+                fname = local_path.name
+                for key, val in file_url_map.items():
+                    if key.endswith(fname) or key.endswith("/" + fname) or key.endswith("\\" + fname):
+                        url = val
+                        break
+            if not url:
+                url = GDRIVE_FOLDER_URL
+                print(f"      No per-file URL for: {rel} -- using folder URL")
             result[str(local_path)] = url
 
-    print(f"\n✅  {len(result)} files ready for processing.\n")
+    print(f"\n    {len(result)} files ready for processing.\n")
     return result
 
 
-def _collect_drive_urls(service, folder_id: str,
-                        acc: Dict[str, str]) -> None:
-    """Recursively walks a Drive folder collecting filename → webViewLink."""
-    page_token = None
-    while True:
-        resp = service.files().list(
-            q=f"'{folder_id}' in parents and trashed = false",
-            fields="nextPageToken, files(id, name, mimeType, webViewLink)",
-            pageToken=page_token,
-        ).execute()
-
-        for f in resp.get("files", []):
-            if f["mimeType"] == "application/vnd.google-apps.folder":
-                _collect_drive_urls(service, f["id"], acc)
-            else:
-                acc[f["name"]] = f.get("webViewLink", GDRIVE_FOLDER_URL)
-
-        page_token = resp.get("nextPageToken")
-        if not page_token:
-            break
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 # Pinecone index management
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 
 def ensure_pinecone_index(pc: Pinecone) -> None:
     existing = [idx.name for idx in pc.list_indexes()]
     if PINECONE_INDEX_NAME not in existing:
-        print(f"🆕  Creating index '{PINECONE_INDEX_NAME}' (dim=3072, cosine)…")
+        print(f"    Creating index '{PINECONE_INDEX_NAME}' (dim=3072, cosine)...")
         pc.create_index(
             name=PINECONE_INDEX_NAME,
             dimension=3072,         # Gemini gemini-embedding-001 output dimension
             metric="cosine",
             spec=ServerlessSpec(cloud="aws", region="us-east-1"),
         )
-        print("   ✅  Index created.\n")
+        print("       Index created.\n")
     else:
-        print(f"✅  Index '{PINECONE_INDEX_NAME}' exists.\n")
+        print(f"    Index '{PINECONE_INDEX_NAME}' exists.\n")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 # MAIN PIPELINE
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 
 def run_ingestion(clear_index: bool = False) -> None:
     if not GOOGLE_API_KEY:
@@ -149,13 +155,13 @@ def run_ingestion(clear_index: bool = False) -> None:
 
     if clear_index:
         if PINECONE_INDEX_NAME in [idx.name for idx in pc.list_indexes()]:
-            print(f"⚠️   Deleting index '{PINECONE_INDEX_NAME}'…")
+            print(f"    Deleting index '{PINECONE_INDEX_NAME}'...")
             pc.delete_index(PINECONE_INDEX_NAME)
             print("    Deleted.\n")
 
     ensure_pinecone_index(pc)
 
-    # Temp dir is created here and deleted in the finally block — always.
+    # Temp dir is created here and deleted in the finally block -- always.
     tmp_dir = tempfile.mkdtemp(prefix="karan_rag_ingest_")
 
     try:
@@ -172,15 +178,15 @@ def run_ingestion(clear_index: bool = False) -> None:
         # 6. Always delete temp files
         if os.path.exists(tmp_dir):
             shutil.rmtree(tmp_dir)
-            print(f"🗑️   Temp dir deleted: {tmp_dir}")
+            print(f"    Temp dir deleted: {tmp_dir}")
 
-    print("\n🎉  Ingestion complete!")
+    print("\n    Ingestion complete!")
     print(f"    Index : {PINECONE_INDEX_NAME}")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 # CLI
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

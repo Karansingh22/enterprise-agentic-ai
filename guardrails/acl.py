@@ -19,5 +19,5 @@ def get_allowed_departments_for_role(role: str) -> List[str]:
         return ROLE_ACCESS[role]
     else:
         # Failsafe: Only allow generic policies if an unknown role bypasses authentication somehow.
-        print(f"⚠️ Warning: Unrecognized role '{role}' attempting access. Defaulting to safe fallback.")
+        print(f"[WARN] Warning: Unrecognized role '{role}' attempting access. Defaulting to safe fallback.")
         return ["policies"]

@@ -2,7 +2,7 @@
 rag/chunking.py
 ===============
 Owns all document loading and chunking logic.
-Called by ingest.py — not used at query time.
+Called by ingest.py -- not used at query time.
 """
 
 import re
@@ -23,18 +23,18 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from config import FOLDER_CATEGORY_MAP
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 # Metadata extractors
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 
 def _category_from_path(file_path: Path, base_dir: Path) -> str:
     """
     ACL category from the sub-folder name inside the temp download directory.
 
-    <tmp>/knowledge_base/...  →  "kb"
-    <tmp>/incidents/...       →  "incidents"
-    <tmp>/policies/...        →  "policies"
-    <tmp>/employee_data/...   →  "employee_data"
+    <tmp>/knowledge_base/...  ->  "kb"
+    <tmp>/incidents/...       ->  "incidents"
+    <tmp>/policies/...        ->  "policies"
+    <tmp>/employee_data/...   ->  "employee_data"
     """
     try:
         relative = file_path.relative_to(base_dir)
@@ -47,8 +47,8 @@ def _category_from_path(file_path: Path, base_dir: Path) -> str:
 def _short_name(file_path: Path) -> str:
     """
     Human-readable citation label from filename.
-    'kb_password_reset_guide.txt'  →  'Password Reset Guide'
-    'INC001_mfa_bypass.pdf'        →  'Inc001 Mfa Bypass'
+    'kb_password_reset_guide.txt'  ->  'Password Reset Guide'
+    'INC001_mfa_bypass.pdf'        ->  'Inc001 Mfa Bypass'
     """
     stem  = file_path.stem
     clean = stem.replace("kb_", "").replace("_", " ").title()
@@ -59,10 +59,10 @@ def _extract_kb_id(file_path: Path) -> str:
     """
     Extracts a structured article ID from the filename if present.
 
-    'kb_013_github_setup.txt'  →  'KB-013'
-    'INC001_mfa_bypass.pdf'    →  'INC-001'
-    'KB013_some_doc.md'        →  'KB-013'
-    'random_doc.pdf'           →  ''   (no ID found)
+    'kb_013_github_setup.txt'  ->  'KB-013'
+    'INC001_mfa_bypass.pdf'    ->  'INC-001'
+    'KB013_some_doc.md'        ->  'KB-013'
+    'random_doc.pdf'           ->  ''   (no ID found)
     """
     stem    = file_path.stem.upper()
     # Match INC001, INC-001, KB013, KB-013, POL-05, etc.
@@ -78,9 +78,9 @@ def _extract_severity(file_path: Path, category: str) -> str:
     Extracts incident severity from the filename if present.
     Only meaningful for the 'incidents' category.
 
-    'INC001_P1_mfa_bypass.pdf'  →  'P1'
-    'INC002_p2_lockout.txt'     →  'P2'
-    'anything_else.txt'         →  ''
+    'INC001_P1_mfa_bypass.pdf'  ->  'P1'
+    'INC002_p2_lockout.txt'     ->  'P2'
+    'anything_else.txt'         ->  ''
     """
     if category != "incidents":
         return ""
@@ -93,11 +93,11 @@ def _extract_department(file_path: Path) -> str:
     """
     Infers department from filename keywords.
 
-    'hr_leave_policy.pdf'      →  'HR'
-    'it_access_guide.txt'      →  'IT'
-    'fin_expense_policy.docx'  →  'Finance'
-    'kb_github_setup.md'       →  'Engineering'
-    'password_policy.pdf'      →  'IT'  (default for security docs)
+    'hr_leave_policy.pdf'      ->  'HR'
+    'it_access_guide.txt'      ->  'IT'
+    'fin_expense_policy.docx'  ->  'Finance'
+    'kb_github_setup.md'       ->  'Engineering'
+    'password_policy.pdf'      ->  'IT'  (default for security docs)
     """
     from config import DEPARTMENT_MAPPING
     stem_lower = file_path.stem.lower()
@@ -107,9 +107,9 @@ def _extract_department(file_path: Path) -> str:
     return "General"
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 # Loader factory
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 
 def load_file(file_path: Path) -> List[Document]:
     """
@@ -131,13 +131,13 @@ def load_file(file_path: Path) -> List[Document]:
     try:
         return factory(file_path).load()
     except Exception as e:
-        print(f"  ❌  {file_path.name}: {e}")
+        print(f"  [ERROR] {file_path.name}: {e}")
         return []
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 # Chunker + metadata injector
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 
 def chunk_and_tag(
     file_path: Path,
@@ -149,17 +149,17 @@ def chunk_and_tag(
     Splits raw Documents and attaches rich metadata to every chunk.
 
     Metadata stored in Pinecone per chunk
-    ──────────────────────────────────────
-    file_name    — original filename                    e.g. "INC001_mfa_bypass.pdf"
-    short_name   — clean citation label                 e.g. "Mfa Bypass"
-    source_url   — Google Drive webViewLink             e.g. "https://drive.google.com/file/d/.../view"
-    category     — ACL partition key                    e.g. "incidents"
-    source_type  — file extension without dot           e.g. "pdf"
-    kb_id        — structured article reference         e.g. "INC-001" | "KB-013" | ""
-    severity     — incident priority (incidents only)   e.g. "P1" | "P2" | ""
-    department   — owning team                          e.g. "IT" | "HR" | "Finance"
-    ingested_at  — ISO 8601 UTC timestamp               e.g. "2026-04-20T00:00:00Z"
-    chunk_index  — position of this chunk in the file   e.g. 0, 1, 2 ...
+    --------------------------------------
+    file_name    -- original filename                    e.g. "INC001_mfa_bypass.pdf"
+    short_name   -- clean citation label                 e.g. "Mfa Bypass"
+    source_url   -- Google Drive webViewLink             e.g. "https://drive.google.com/file/d/.../view"
+    category     -- ACL partition key                    e.g. "incidents"
+    source_type  -- file extension without dot           e.g. "pdf"
+    kb_id        -- structured article reference         e.g. "INC-001" | "KB-013" | ""
+    severity     -- incident priority (incidents only)   e.g. "P1" | "P2" | ""
+    department   -- owning team                          e.g. "IT" | "HR" | "Finance"
+    ingested_at  -- ISO 8601 UTC timestamp               e.g. "2026-04-20T00:00:00Z"
+    chunk_index  -- position of this chunk in the file   e.g. 0, 1, 2 ...
     """
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=800,
@@ -188,9 +188,9 @@ def chunk_and_tag(
     return chunks
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 # Directory processor  (called by ingest.py)
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 
 def process_directory(
     base_dir: Path,
@@ -204,12 +204,12 @@ def process_directory(
         file_url_map: {local_file_path_str: google_drive_url}
 
     Returns:
-        Flat list of all enriched chunks — ready for embed + upsert.
+        Flat list of all enriched chunks -- ready for embed + upsert.
     """
     all_chunks: List[Document] = []
     total_files = 0
 
-    print(f"📖  Parsing {len(file_url_map)} downloaded files…\n")
+    print(f"[PARSE] Parsing {len(file_url_map)} downloaded files...\n")
 
     for local_path_str, src_url in file_url_map.items():
         fp = Path(local_path_str)
@@ -227,7 +227,7 @@ def process_directory(
         cat    = _category_from_path(fp, base_dir)
         kb_id  = _extract_kb_id(fp)
         label  = f"[{kb_id}] " if kb_id else ""
-        print(f"  ✅  {label}{fp.name:<50} [{cat}]  {len(chunks)} chunks")
+        print(f"  [OK] {label}{fp.name:<50} [{cat}]  {len(chunks)} chunks")
 
-    print(f"\n📦  {total_files} files  →  {len(all_chunks)} chunks total\n")
+    print(f"\n[DONE] {total_files} files -> {len(all_chunks)} chunks total\n")
     return all_chunks

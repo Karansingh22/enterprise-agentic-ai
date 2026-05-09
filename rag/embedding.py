@@ -7,8 +7,8 @@ def get_embeddings_model(task_type: str = "retrieval_query") -> GoogleGenerative
     Initializes and returns the Google Gemini embeddings wrapper.
     Ensures that the API key is passed and the correct task type is set for retrieval.
     task_type:
-        "retrieval_query"    — User query at inference
-        "retrieval_document" — Chunking phase for vector db
+        "retrieval_query"    -- User query at inference
+        "retrieval_document" -- Chunking phase for vector db
     """
     if not GOOGLE_API_KEY:
         raise ValueError("GOOGLE_API_KEY is missing from environment variables.")

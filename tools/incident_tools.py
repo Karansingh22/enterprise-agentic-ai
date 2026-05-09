@@ -4,7 +4,7 @@ tools/incident_tools.py
 LangChain tool factory for knowledge-base retrieval.
 
 The tool is built dynamically per request so the ACL role-filter is
-captured in the closure — the LLM cannot override or inspect it.
+captured in the closure -- the LLM cannot override or inspect it.
 """
 
 from langchain.tools import tool
@@ -40,7 +40,7 @@ def get_kb_search_tool(role_filter: str):
 
         lines = []
         for doc in docs:
-            # ── Pull all metadata fields ──────────────────────────────
+            # -- Pull all metadata fields ------------------------------
             short_name  = doc.metadata.get("short_name",  "Unknown Document")
             source_url  = doc.metadata.get("source_url",  "")
             category    = doc.metadata.get("category",    "")
@@ -50,7 +50,7 @@ def get_kb_search_tool(role_filter: str):
             ingested_at = doc.metadata.get("ingested_at", "")
             content     = doc.page_content.strip()
 
-            # ── Build citation header ─────────────────────────────────
+            # -- Build citation header ---------------------------------
             # Format: **[INC-001] Mfa Bypass** (incidents · IT · P1)
             # with a clickable link if source_url is available
             ref_label = f"[{kb_id}] {short_name}" if kb_id else short_name

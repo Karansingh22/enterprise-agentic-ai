@@ -1,14 +1,14 @@
 """
-agents/orchestrator.py — Karan Systems Agentic RAG (create_agent API)
+agents/orchestrator.py -- Karan Systems Agentic RAG (create_agent API)
 ======================================================================
 Uses the latest `langchain.agents.create_agent` which is backed by
-LangGraph under the hood — no AgentExecutor needed.
+LangGraph under the hood -- no AgentExecutor needed.
 
 Flow per query:
-  1. Topic Security Guardrail   → block off-topic / jailbreak attempts
-  2. PII Scrubber               → mask emails / phone numbers before LLM sees them
-  3. Intent Classifier          → NOISE / REAL / GENERAL
-  4. create_agent invocation    → retrieve + generate with streamed reasoning
+  1. Topic Security Guardrail   -> block off-topic / jailbreak attempts
+  2. PII Scrubber               -> mask emails / phone numbers before LLM sees them
+  3. Intent Classifier          -> NOISE / REAL / GENERAL
+  4. create_agent invocation    -> retrieve + generate with streamed reasoning
 """
 
 from langchain.agents import create_agent
@@ -33,9 +33,9 @@ class KaranAgenticRAG:
     """
 
     def __init__(self):
-        print("🔧  Initializing Karan Systems Agentic RAG (create_agent)...")
+        print("[INIT]  Initializing Karan Systems Agentic RAG (create_agent)...")
 
-        # ── LLM ────────────────────────────────────────────────
+        # -- LLM ------------------------------------------------
         self.llm = ChatGoogleGenerativeAI(
             model=GEMINI_MODEL,
             google_api_key=GOOGLE_API_KEY,
@@ -43,17 +43,17 @@ class KaranAgenticRAG:
             top_p=0.9,
             convert_system_message_to_human=True,  # required for Gemini
         )
-        print(f"   ✅  LLM: Gemini ({GEMINI_MODEL})")
+        print(f"   [OK]  LLM: Gemini ({GEMINI_MODEL})")
 
-        # ── Long-term memory store (shared across sessions) ────
+        # -- Long-term memory store (shared across sessions) ----
         # In production: swap InMemoryStore for PostgresStore or RedisStore.
         self.store = InMemoryStore()
 
-        print("   ✅  Agent ready!\n")
+        print("   [OK]  Agent ready!\n")
 
-    # ──────────────────────────────────────────────────────────
+    # ----------------------------------------------------------
     # Internal: build a fresh agent graph for the given role
-    # ──────────────────────────────────────────────────────────
+    # ----------------------------------------------------------
     def _build_agent(self, role: str):
         """
         Creates a LangGraph-backed agent using create_agent.
@@ -72,9 +72,9 @@ class KaranAgenticRAG:
         )
         return agent
 
-    # ──────────────────────────────────────────────────────────
+    # ----------------------------------------------------------
     # Public: main query entry-point
-    # ──────────────────────────────────────────────────────────
+    # ----------------------------------------------------------
     def query(
         self,
         user_query: str,
@@ -90,26 +90,26 @@ class KaranAgenticRAG:
             role:         Authenticated user role (e.g. "employee", "it_admin")
 
         Returns:
-            str — the agent's final answer.
+            str -- the agent's final answer.
         """
 
-        # ── 1. Topic Guardrail ─────────────────────────────────
+        # -- 1. Topic Guardrail ---------------------------------
         if not check_topic_allowed(user_query):
             return (
                 "I'm sorry, I can only assist with Karan Systems IT and HR "
                 "topics.  Please rephrase your question."
             )
 
-        # ── 2. PII Scrub ───────────────────────────────────────
+        # -- 2. PII Scrub ---------------------------------------
         safe_query = scrub_pii(user_query)
 
-        # ── 3. Skip Intent Classification to save LLM calls ────
+        # -- 3. Skip Intent Classification to save LLM calls ----
         contextualized_query = safe_query
 
-        # ── 4. Build agent with correct ACL role ───────────────
+        # -- 4. Build agent with correct ACL role ---------------
         agent = self._build_agent(role=role)
 
-        # ── 5. Build message list  (history + current turn) ───
+        # -- 5. Build message list  (history + current turn) ---
         messages = []
         for msg in chat_history:
             # Accept both dict style and tuple style history
@@ -120,7 +120,7 @@ class KaranAgenticRAG:
 
         messages.append({"role": "user", "content": contextualized_query})
 
-        # ── 6. Invoke create_agent ────────────────────────────
+        # -- 6. Invoke create_agent ----------------------------
         try:
             result = agent.invoke({"messages": messages})
             # create_agent returns a LangGraph state dict;
