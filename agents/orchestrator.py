@@ -123,9 +123,14 @@ class KaranAgenticRAG:
         # -- 6. Invoke create_agent ----------------------------
         try:
             result = agent.invoke({"messages": messages})
-            # create_agent returns a LangGraph state dict;
-            # the final answer is always the last message.
-            return result["messages"][-1].content
+            content = result["messages"][-1].content
+            
+            # Google GenAI (gemini-2.5-flash) sometimes returns content as a list of dicts
+            if isinstance(content, list):
+                text_parts = [p.get("text", "") for p in content if isinstance(p, dict)]
+                return "".join(text_parts)
+                
+            return str(content)
 
         except Exception as e:
             return f"Agent error: {e}"
