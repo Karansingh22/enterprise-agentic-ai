@@ -15,7 +15,7 @@ GEMINI_MODEL       = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 GEMINI_EMBED_MODEL = os.getenv("GEMINI_EMBEDDING_MODEL", "models/gemini-embedding-001")
 
 # ── Vector Store Configuration ───────────────────────────────
-PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "karan-systems-kb")
+PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "karan-systems-data")
 PINECONE_NAMESPACE  = os.getenv("PINECONE_NAMESPACE", "")   # leave blank for default namespace
 TOP_K_RETRIEVAL     = int(os.getenv("TOP_K", "5"))
 TOP_K               = TOP_K_RETRIEVAL                        # alias used in some modules
@@ -50,7 +50,7 @@ FOLDER_CATEGORY_MAP = {
 
 # ── Mock Authentication Database ─────────────────────────────
 MOCK_USERS = {
-    "karansinghthakur002@gmail.com": {
+    "singh@karansystem.com": {
         "password": "karan",
         "role":    "it_admin",
         "user_id": "EMP_001",
