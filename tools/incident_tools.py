@@ -33,7 +33,12 @@ def get_kb_search_tool(role_filter: str):
         docs      = retriever.invoke(query)
 
         if not docs:
+            import json
+            filter_used = retriever.search_kwargs.get("filter", "none")
             return (
+                f"[DEBUG] Tool executed but found 0 documents.\n"
+                f"- Query used: '{query}'\n"
+                f"- Filter used: {json.dumps(filter_used)}\n\n"
                 "No matching documents found in the Karan Systems knowledge base. "
                 "Manual investigation may be required."
             )

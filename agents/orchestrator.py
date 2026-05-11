@@ -11,9 +11,13 @@ Flow per query:
   4. create_agent invocation    -> retrieve + generate with streamed reasoning
 """
 
+import asyncio
+import os
 from langchain.agents import create_agent
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.store.memory import InMemoryStore
+from langchain_mcp_adapters.client import MultiServerMCPClient
+from langchain_mcp_adapters.tools import load_mcp_tools
 
 from config import GEMINI_MODEL, GOOGLE_API_KEY
 from prompts.system_prompts import ORCHESTRATOR_SYSTEM_PROMPT
@@ -28,12 +32,10 @@ class KaranAgenticRAG:
     Each instance holds:
     - A shared Gemini LLM handle
     - A shared InMemoryStore for cross-turn long-term memory
-    - A factory that creates a fully-configured create_agent graph
-      dynamically per user role (so ACL filter is always correct)
     """
 
     def __init__(self):
-        print("[INIT]  Initializing Karan Systems Agentic RAG (create_agent)...")
+        print("[INIT]  Initializing Karan Systems Agentic RAG (create_agent with MCP)...")
 
         # -- LLM ------------------------------------------------
         self.llm = ChatGoogleGenerativeAI(
@@ -46,31 +48,63 @@ class KaranAgenticRAG:
         print(f"   [OK]  LLM: Gemini ({GEMINI_MODEL})")
 
         # -- Long-term memory store (shared across sessions) ----
-        # In production: swap InMemoryStore for PostgresStore or RedisStore.
         self.store = InMemoryStore()
 
         print("   [OK]  Agent ready!\n")
 
-    # ----------------------------------------------------------
-    # Internal: build a fresh agent graph for the given role
-    # ----------------------------------------------------------
-    def _build_agent(self, role: str):
-        """
-        Creates a LangGraph-backed agent using create_agent.
-
-        The KB search tool is built with the user's ACL role baked into
-        its closure so it cannot be tampered with by the LLM.
-        """
+    async def _aquery(self, safe_query: str, chat_history: list, role: str) -> str:
+        """Async internal implementation of query to handle MCP sessions."""
+        # 1. Base tools
         kb_tool = get_kb_search_tool(role_filter=role)
+        all_tools = [kb_tool]
 
-        agent = create_agent(
-            model=self.llm,
-            tools=[kb_tool],
-            system_prompt=ORCHESTRATOR_SYSTEM_PROMPT,
-            name="karan_rag_agent",
-            store=self.store,       # enable long-term memory
-        )
-        return agent
+        # 2. Setup MCP Client
+        mcp_server_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "tools", "mcp_server.py")
+        client = MultiServerMCPClient({
+            "MeetingScheduler": {
+                "transport": "stdio",
+                "command": "python",
+                "args": [mcp_server_path],
+            }
+        })
+
+        try:
+            # Connect to MCP and fetch tools
+            async with client.session("MeetingScheduler") as session:
+                mcp_tools = await load_mcp_tools(session)
+                all_tools.extend(mcp_tools)
+
+                # 3. Build agent dynamically
+                agent = create_agent(
+                    model=self.llm,
+                    tools=all_tools,
+                    system_prompt=ORCHESTRATOR_SYSTEM_PROMPT,
+                    name="karan_rag_agent",
+                    store=self.store,
+                )
+
+                # 4. Format messages
+                messages = []
+                for msg in chat_history:
+                    if isinstance(msg, dict):
+                        messages.append({"role": msg["role"], "content": msg["content"]})
+                    elif isinstance(msg, (tuple, list)) and len(msg) == 2:
+                        messages.append({"role": msg[0], "content": msg[1]})
+
+                messages.append({"role": "user", "content": safe_query})
+
+                # 5. Invoke Agent
+                result = await agent.ainvoke({"messages": messages})
+                content = result["messages"][-1].content
+                
+                if isinstance(content, list):
+                    text_parts = [p.get("text", "") for p in content if isinstance(p, dict)]
+                    return "".join(text_parts)
+                    
+                return str(content)
+                
+        except Exception as e:
+            return f"Agent execution error (MCP/LLM): {e}"
 
     # ----------------------------------------------------------
     # Public: main query entry-point
@@ -83,16 +117,7 @@ class KaranAgenticRAG:
     ) -> str:
         """
         Process a user query through the full pipeline.
-
-        Args:
-            user_query:   Raw text from the user.
-            chat_history: List of {"role": "user"/"assistant", "content": str}
-            role:         Authenticated user role (e.g. "employee", "it_admin")
-
-        Returns:
-            str -- the agent's final answer.
         """
-
         # -- 1. Topic Guardrail ---------------------------------
         if not check_topic_allowed(user_query):
             return (
@@ -103,34 +128,5 @@ class KaranAgenticRAG:
         # -- 2. PII Scrub ---------------------------------------
         safe_query = scrub_pii(user_query)
 
-        # -- 3. Skip Intent Classification to save LLM calls ----
-        contextualized_query = safe_query
-
-        # -- 4. Build agent with correct ACL role ---------------
-        agent = self._build_agent(role=role)
-
-        # -- 5. Build message list  (history + current turn) ---
-        messages = []
-        for msg in chat_history:
-            # Accept both dict style and tuple style history
-            if isinstance(msg, dict):
-                messages.append({"role": msg["role"], "content": msg["content"]})
-            elif isinstance(msg, (tuple, list)) and len(msg) == 2:
-                messages.append({"role": msg[0], "content": msg[1]})
-
-        messages.append({"role": "user", "content": contextualized_query})
-
-        # -- 6. Invoke create_agent ----------------------------
-        try:
-            result = agent.invoke({"messages": messages})
-            content = result["messages"][-1].content
-            
-            # Google GenAI (gemini-2.5-flash) sometimes returns content as a list of dicts
-            if isinstance(content, list):
-                text_parts = [p.get("text", "") for p in content if isinstance(p, dict)]
-                return "".join(text_parts)
-                
-            return str(content)
-
-        except Exception as e:
-            return f"Agent error: {e}"
+        # -- 3. Execute Async Pipeline --------------------------
+        return asyncio.run(self._aquery(safe_query, chat_history, role))

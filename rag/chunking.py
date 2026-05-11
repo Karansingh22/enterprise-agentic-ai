@@ -38,8 +38,12 @@ def _category_from_path(file_path: Path, base_dir: Path) -> str:
     """
     try:
         relative = file_path.relative_to(base_dir)
-        folder   = relative.parts[0] if len(relative.parts) > 1 else "general"
-        return FOLDER_CATEGORY_MAP.get(folder, folder)
+        # Search all parts of the relative path for a known category mapping
+        for part in relative.parts:
+            if part in FOLDER_CATEGORY_MAP:
+                return FOLDER_CATEGORY_MAP[part]
+        # Fallback if no known category folder is found
+        return "kb"
     except ValueError:
         return "kb"
 

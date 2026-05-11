@@ -10,7 +10,7 @@ st.set_page_config(
 )
 
 # -- Session-state init --------------------------------------------------------
-_SESSION_VERSION = 3  # bump when MOCK_USERS or auth logic changes
+_SESSION_VERSION = 4  # bump when MOCK_USERS or auth logic changes
 
 for key, default in {
     "logged_in": False,
