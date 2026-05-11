@@ -5,9 +5,15 @@ from agents.orchestrator import KaranAgenticRAG
 # -- Page config --------------------------------------------------------------
 st.set_page_config(
     page_title=f"{COMPANY} -- Agentic RAG",
-    page_icon="[CORP]",
+    page_icon="✨",
     layout="wide",
 )
+
+# Load CSS
+import os
+css_path = os.path.join(os.path.dirname(__file__), "ui", "style.css")
+with open(css_path) as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # -- Session-state init --------------------------------------------------------
 _SESSION_VERSION = 4  # bump when MOCK_USERS or auth logic changes
@@ -32,13 +38,15 @@ if st.session_state.get("session_version", 0) != _SESSION_VERSION:
 # 1. AUTHENTICATION
 # ===============================================================================
 if not st.session_state["logged_in"]:
-    st.title(f"[CORP] {COMPANY} -- Secure Portal")
-    st.markdown("Log in with your corporate credentials to access the RAG system.")
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.title(f"✨ {COMPANY} AI")
+        st.markdown("<p style='color: #94a3b8; font-size: 1.1rem; margin-bottom: 2rem;'>Enterprise Agentic Intelligence. Please authenticate.</p>", unsafe_allow_html=True)
 
-    with st.form("login_form"):
-        email    = st.text_input("Corporate Email")
-        password = st.text_input("Password", type="password")
-        submit   = st.form_submit_button("Login")
+        with st.form("login_form"):
+            email    = st.text_input("Corporate Email", placeholder="you@karansystem.com")
+            password = st.text_input("Password", type="password", placeholder="••••••••")
+            submit   = st.form_submit_button("Authenticate")
 
         if submit:
             record = MOCK_USERS.get(email.strip())
@@ -74,9 +82,10 @@ with st.sidebar:
 
 
 # -- Page header ---------------------------------------------------------------
-st.title(f"[CORP] {COMPANY} -- Enterprise Agentic RAG")
-st.caption(
-    f"Welcome back, **{user['name']}** · Role: `{role}`"
+st.title(f"✨ {COMPANY} AI")
+st.markdown(
+    f"<p style='color: #94a3b8; font-size: 1.1rem;'>Welcome back, <strong>{user['name']}</strong> &middot; Role: <span style='color: #6366f1;'>{role}</span></p>", 
+    unsafe_allow_html=True
 )
 
 # -- Load agent (cached per session) ------------------------------------------

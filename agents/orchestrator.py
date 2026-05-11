@@ -59,11 +59,12 @@ class KaranAgenticRAG:
         all_tools = [kb_tool]
 
         # 2. Setup MCP Client
+        import sys
         mcp_server_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "tools", "mcp_server.py")
         client = MultiServerMCPClient({
             "MeetingScheduler": {
                 "transport": "stdio",
-                "command": "python",
+                "command": sys.executable,
                 "args": [mcp_server_path],
             }
         })
