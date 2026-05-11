@@ -47,3 +47,4 @@ tqdm>=4.67.1
 # ── Model Context Protocol (MCP) ─────────────────────────────
 mcp>=1.1.2
 langchain-mcp-adapters>=0.1.0
+pydantic>=2.0.0
