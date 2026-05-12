@@ -70,7 +70,7 @@ cp .env.example .env
 Your `.env` file:
 ```
 GOOGLE_API_KEY=AIzaSy...your_key_here
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-2.0-flash
 GEMINI_EMBEDDING_MODEL=models/text-embedding-004
 ```
 
