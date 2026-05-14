@@ -1,3 +1,10 @@
+import sys
+import os
+
+# Ensure the project root is on sys.path so `config` can be imported
+# when this file is run as a subprocess from the tools/ directory.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart

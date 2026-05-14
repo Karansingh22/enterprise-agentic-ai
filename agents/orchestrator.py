@@ -52,30 +52,59 @@ class KaranAgenticRAG:
 
         print("   [OK]  Agent ready!\n")
 
+    # Keywords that signal the user wants meeting/email functionality
+    _MCP_KEYWORDS = {"meeting", "schedule", "invite", "calendar", "send email", "draft email",
+                     "send meeting", "book a meeting", "set up a meeting", "draft meeting"}
+
+    @staticmethod
+    def _needs_mcp(query: str) -> bool:
+        """Fast keyword check — returns True only when the query looks meeting/email-related."""
+        q = query.lower()
+        return any(kw in q for kw in KaranAgenticRAG._MCP_KEYWORDS)
+
     async def _aquery(self, safe_query: str, chat_history: list, role: str) -> str:
-        """Async internal implementation of query to handle MCP sessions."""
-        # 1. Base tools
+        """Async internal implementation of query. Only opens an MCP session when needed."""
+        # 1. Base tools (always available)
         kb_tool = get_kb_search_tool(role_filter=role)
         all_tools = [kb_tool]
 
-        # 2. Setup MCP Client
-        import sys
-        mcp_server_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "tools", "mcp_server.py")
-        client = MultiServerMCPClient({
-            "MeetingScheduler": {
-                "transport": "stdio",
-                "command": sys.executable,
-                "args": [mcp_server_path],
-            }
-        })
+        # 2. Format messages (shared by both paths)
+        messages = []
+        for msg in chat_history:
+            if isinstance(msg, dict):
+                messages.append({"role": msg["role"], "content": msg["content"]})
+            elif isinstance(msg, (tuple, list)) and len(msg) == 2:
+                messages.append({"role": msg[0], "content": msg[1]})
+        messages.append({"role": "user", "content": safe_query})
 
         try:
-            # Connect to MCP and fetch tools
-            async with client.session("MeetingScheduler") as session:
-                mcp_tools = await load_mcp_tools(session)
-                all_tools.extend(mcp_tools)
+            if self._needs_mcp(safe_query):
+                # --- MCP path: spawn MeetingScheduler only when needed ---
+                import sys
+                mcp_server_path = os.path.join(
+                    os.path.dirname(os.path.dirname(__file__)), "tools", "mcp_server.py"
+                )
+                client = MultiServerMCPClient({
+                    "MeetingScheduler": {
+                        "transport": "stdio",
+                        "command": sys.executable,
+                        "args": [mcp_server_path],
+                    }
+                })
+                async with client.session("MeetingScheduler") as session:
+                    mcp_tools = await load_mcp_tools(session)
+                    all_tools.extend(mcp_tools)
 
-                # 3. Build agent dynamically
+                    agent = create_agent(
+                        model=self.llm,
+                        tools=all_tools,
+                        system_prompt=ORCHESTRATOR_SYSTEM_PROMPT,
+                        name="karan_rag_agent",
+                        store=self.store,
+                    )
+                    result = await agent.ainvoke({"messages": messages})
+            else:
+                # --- KB-only path: no MCP subprocess, no websocket overhead ---
                 agent = create_agent(
                     model=self.llm,
                     tools=all_tools,
@@ -83,27 +112,14 @@ class KaranAgenticRAG:
                     name="karan_rag_agent",
                     store=self.store,
                 )
-
-                # 4. Format messages
-                messages = []
-                for msg in chat_history:
-                    if isinstance(msg, dict):
-                        messages.append({"role": msg["role"], "content": msg["content"]})
-                    elif isinstance(msg, (tuple, list)) and len(msg) == 2:
-                        messages.append({"role": msg[0], "content": msg[1]})
-
-                messages.append({"role": "user", "content": safe_query})
-
-                # 5. Invoke Agent
                 result = await agent.ainvoke({"messages": messages})
-                content = result["messages"][-1].content
-                
-                if isinstance(content, list):
-                    text_parts = [p.get("text", "") for p in content if isinstance(p, dict)]
-                    return "".join(text_parts)
-                    
-                return str(content)
-                
+
+            content = result["messages"][-1].content
+            if isinstance(content, list):
+                text_parts = [p.get("text", "") for p in content if isinstance(p, dict)]
+                return "".join(text_parts)
+            return str(content)
+
         except Exception as e:
             return f"Agent execution error (MCP/LLM): {e}"
 
