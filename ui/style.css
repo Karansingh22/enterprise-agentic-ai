@@ -1,142 +1,537 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* ============================================================================
+   QUANTUM GLASS — Karan Systems Design System
+   Inspired by: OpenAI's authority, Anthropic's sophistication,
+   DeepMind's energy, Together AI's depth
+   ============================================================================ */
 
-/* Base Styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ── Design Tokens ───────────────────────────────────────────────────────── */
+:root {
+    --void:         #020617;
+    --void-mid:     #0a0f1e;
+    --void-surface: #0f1629;
+    --glass:        rgba(255, 255, 255, 0.03);
+    --glass-hover:  rgba(255, 255, 255, 0.06);
+    --glass-border: rgba(255, 255, 255, 0.06);
+    --glass-glow:   rgba(255, 255, 255, 0.08);
+    --text-primary: #f0f4f8;
+    --text-secondary: #7b8ba3;
+    --text-muted:   #4a5568;
+    --accent-cyan:  #06d6a0;
+    --accent-violet: #8b5cf6;
+    --accent-blue:  #3b82f6;
+    --accent-rose:  #f43f5e;
+    --gradient-brand: linear-gradient(135deg, #06d6a0 0%, #3b82f6 50%, #8b5cf6 100%);
+    --gradient-glow:  linear-gradient(135deg, rgba(6,214,160,0.4), rgba(59,130,246,0.4), rgba(139,92,246,0.4));
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+    --shadow-ambient: 0 0 80px rgba(6, 214, 160, 0.04), 0 0 160px rgba(139, 92, 246, 0.03);
+}
+
+/* ── Base Reset ──────────────────────────────────────────────────────────── */
 html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* Background & Main App */
+/* ── Hide Streamlit Chrome ───────────────────────────────────────────────── */
+header { visibility: hidden !important; height: 0 !important; }
+footer { visibility: hidden !important; height: 0 !important; }
+#MainMenu { visibility: hidden !important; }
+.stDeployButton { display: none !important; }
+[data-testid="stToolbar"] { display: none !important; }
+[data-testid="stDecoration"] { display: none !important; }
+
+/* ── Living Aurora Background ────────────────────────────────────────────── */
 .stApp {
-    background: radial-gradient(circle at 15% 50%, #12151f, #0d0f14 50%, #090a0d);
-    color: #e2e8f0;
+    background: var(--void) !important;
+    color: var(--text-primary);
+    overflow: hidden;
 }
 
-/* Hide Streamlit Clutter */
-header { visibility: hidden; }
-footer { visibility: hidden; }
-#MainMenu { visibility: hidden; }
-.stDeployButton { display: none; }
+.stApp::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background:
+        radial-gradient(ellipse 600px 400px at 20% 30%, rgba(6, 214, 160, 0.07) 0%, transparent 70%),
+        radial-gradient(ellipse 500px 500px at 80% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 400px 600px at 60% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 70%),
+        radial-gradient(ellipse 300px 300px at 10% 90%, rgba(244, 63, 94, 0.04) 0%, transparent 70%);
+    animation: auroraShift 25s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 0;
+    will-change: transform;
+}
 
-/* Login Form (Glassmorphism) */
+@keyframes auroraShift {
+    0%   { transform: translate(0, 0) rotate(0deg) scale(1); }
+    33%  { transform: translate(3%, -2%) rotate(1deg) scale(1.02); }
+    66%  { transform: translate(-2%, 3%) rotate(-1deg) scale(0.98); }
+    100% { transform: translate(1%, -1%) rotate(0.5deg) scale(1.01); }
+}
+
+/* Subtle grid overlay */
+.stApp::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Main Content Wrapper ────────────────────────────────────────────────── */
+.stApp > * { position: relative; z-index: 1; }
+[data-testid="stAppViewContainer"] { position: relative; z-index: 1; }
+.main .block-container {
+    max-width: 900px !important;
+    padding-top: 2rem !important;
+}
+
+/* ── Typography ──────────────────────────────────────────────────────────── */
+h1 {
+    font-weight: 800 !important;
+    font-size: 2.2rem !important;
+    letter-spacing: -0.03em !important;
+    background: var(--gradient-brand) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    line-height: 1.15 !important;
+    animation: gradientText 6s ease-in-out infinite;
+    background-size: 200% 200% !important;
+}
+
+h2, h3 {
+    color: var(--text-primary) !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+    background: none !important;
+    -webkit-text-fill-color: var(--text-primary) !important;
+}
+
+@keyframes gradientText {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+}
+
+p, span, li, div {
+    letter-spacing: -0.01em;
+}
+
+/* ── Login Form — Floating Glass Card ────────────────────────────────────── */
 [data-testid="stForm"] {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
-    padding: 30px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    margin-top: 50px;
+    background: rgba(15, 22, 41, 0.6) !important;
+    backdrop-filter: blur(40px) saturate(1.5) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(1.5) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: var(--radius-xl) !important;
+    padding: 40px 36px !important;
+    box-shadow:
+        0 24px 80px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.04),
+        var(--shadow-ambient) !important;
+    margin-top: 30px;
+    position: relative;
+    overflow: hidden;
+    animation: formFloat 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transform: translateY(30px);
+    opacity: 0;
 }
 
-/* Inputs */
-.stTextInput > div > div > input {
-    background-color: rgba(255, 255, 255, 0.05) !important;
-    color: #ffffff !important;
+@keyframes formFloat {
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Animated gradient border glow */
+[data-testid="stForm"]::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: var(--radius-xl);
+    padding: 1px;
+    background: linear-gradient(
+        135deg,
+        rgba(6, 214, 160, 0.3),
+        rgba(59, 130, 246, 0.1),
+        rgba(139, 92, 246, 0.3),
+        rgba(6, 214, 160, 0.1)
+    );
+    background-size: 300% 300%;
+    animation: borderGlow 8s ease-in-out infinite;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes borderGlow {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+}
+
+/* ── Input Fields ────────────────────────────────────────────────────────── */
+.stTextInput > div > div > input,
+.stTextInput input,
+[data-testid="stForm"] input,
+[data-baseweb="input"] input,
+[data-baseweb="base-input"] input {
+    background-color: rgba(15, 22, 41, 0.8) !important;
+    background: rgba(15, 22, 41, 0.8) !important;
+    color: var(--text-primary) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 8px !important;
-    padding: 10px 15px !important;
-    transition: all 0.3s ease;
+    border-radius: var(--radius-md) !important;
+    padding: 14px 18px !important;
+    font-size: 0.95rem !important;
+    font-weight: 400 !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    letter-spacing: -0.01em;
+    caret-color: var(--accent-cyan) !important;
 }
 
-.stTextInput > div > div > input:focus {
-    border-color: #6366f1 !important;
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
-    background-color: rgba(255, 255, 255, 0.08) !important;
+/* Input wrapper/container backgrounds */
+[data-baseweb="input"],
+[data-baseweb="base-input"],
+.stTextInput > div > div {
+    background-color: rgba(15, 22, 41, 0.8) !important;
+    background: rgba(15, 22, 41, 0.8) !important;
+    border-radius: var(--radius-md) !important;
 }
 
-/* Primary Buttons */
+.stTextInput > div > div > input:focus,
+.stTextInput input:focus,
+[data-testid="stForm"] input:focus,
+[data-baseweb="input"] input:focus {
+    border-color: rgba(6, 214, 160, 0.5) !important;
+    box-shadow: 0 0 0 3px rgba(6, 214, 160, 0.1), 0 0 20px rgba(6, 214, 160, 0.08) !important;
+    background-color: rgba(15, 22, 41, 0.95) !important;
+    background: rgba(15, 22, 41, 0.95) !important;
+    outline: none !important;
+}
+
+.stTextInput > div > div > input::placeholder,
+.stTextInput input::placeholder,
+[data-testid="stForm"] input::placeholder {
+    color: var(--text-muted) !important;
+    font-weight: 300;
+}
+
+/* Input labels */
+.stTextInput label {
+    color: var(--text-secondary) !important;
+    font-size: 0.82rem !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    margin-bottom: 6px !important;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
 .stButton > button {
-    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
-    color: white !important;
+    background: var(--gradient-brand) !important;
+    background-size: 200% 200% !important;
+    color: #020617 !important;
     border: none !important;
-    border-radius: 8px !important;
-    padding: 10px 24px !important;
-    font-weight: 600 !important;
-    transition: all 0.3s ease !important;
-    box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.39) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 12px 32px !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+    letter-spacing: 0.02em !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 24px rgba(6, 214, 160, 0.2), 0 0 0 0 rgba(6, 214, 160, 0) !important;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    text-transform: uppercase;
 }
 
 .stButton > button:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5) !important;
+    background-size: 100% 100% !important;
+    transform: translateY(-2px) scale(1.02) !important;
+    box-shadow: 0 8px 32px rgba(6, 214, 160, 0.35), 0 0 60px rgba(6, 214, 160, 0.1) !important;
 }
 
-/* Chat Messages */
+.stButton > button:active {
+    transform: translateY(0) scale(0.98) !important;
+}
+
+/* Button shimmer effect */
+.stButton > button::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.15) 50%,
+        transparent 70%
+    );
+    transform: translateX(-100%);
+    transition: none;
+}
+
+.stButton > button:hover::after {
+    animation: shimmerBtn 0.8s ease-out forwards;
+}
+
+@keyframes shimmerBtn {
+    to { transform: translateX(100%); }
+}
+
+/* ── Chat Messages — Quantum Bubbles ─────────────────────────────────────── */
 .stChatMessage {
-    background-color: transparent !important;
+    background: transparent !important;
     border: none !important;
-    padding: 20px !important;
-    animation: fadeIn 0.5s ease-out forwards;
+    padding: 16px 20px !important;
+    animation: msgReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+    transform: translateY(12px);
 }
 
-/* Assistant Bubble */
-[data-testid="chatAvatarIcon-assistant"] {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+@keyframes msgReveal {
+    to { opacity: 1; transform: translateY(0); }
 }
+
+/* Assistant bubble */
 .stChatMessage:has([data-testid="chatAvatarIcon-assistant"]) {
-    background: rgba(255, 255, 255, 0.02) !important;
-    border-left: 2px solid #10b981 !important;
-    border-radius: 0 12px 12px 0;
-    margin: 10px 0;
+    background: rgba(6, 214, 160, 0.03) !important;
+    border-left: 2px solid rgba(6, 214, 160, 0.4) !important;
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0 !important;
+    margin: 8px 0 !important;
+    position: relative;
 }
 
-/* User Bubble */
-[data-testid="chatAvatarIcon-user"] {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+.stChatMessage:has([data-testid="chatAvatarIcon-assistant"])::before {
+    content: '';
+    position: absolute;
+    left: -2px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--accent-cyan), var(--accent-blue));
+    border-radius: 2px;
+    opacity: 0.6;
 }
+
+[data-testid="chatAvatarIcon-assistant"] {
+    background: linear-gradient(135deg, #06d6a0, #059669) !important;
+    box-shadow: 0 0 20px rgba(6, 214, 160, 0.2);
+}
+
+/* User bubble */
 .stChatMessage:has([data-testid="chatAvatarIcon-user"]) {
-    background: rgba(59, 130, 246, 0.05) !important;
-    border-radius: 12px;
-    margin: 10px 0;
+    background: rgba(139, 92, 246, 0.04) !important;
+    border-right: 2px solid rgba(139, 92, 246, 0.3) !important;
+    border-radius: var(--radius-lg) 0 0 var(--radius-lg) !important;
+    margin: 8px 0 !important;
 }
 
-/* Chat Input Bar */
+[data-testid="chatAvatarIcon-user"] {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+}
+
+/* Chat message text */
+.stChatMessage p {
+    color: var(--text-primary) !important;
+    line-height: 1.7 !important;
+    font-size: 0.95rem !important;
+}
+
+/* ── Chat Input Bar — Command Center ─────────────────────────────────────── */
 .stChatInputContainer {
-    background: rgba(18, 21, 31, 0.8) !important;
-    backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 12px !important;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3) !important;
+    background: rgba(10, 15, 30, 0.85) !important;
+    backdrop-filter: blur(30px) saturate(1.5) !important;
+    -webkit-backdrop-filter: blur(30px) saturate(1.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow:
+        0 -8px 40px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.03),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+    padding: 4px !important;
+    transition: all 0.3s ease !important;
+}
+
+.stChatInputContainer:focus-within {
+    border-color: rgba(6, 214, 160, 0.3) !important;
+    box-shadow:
+        0 -8px 40px rgba(0, 0, 0, 0.3),
+        0 0 40px rgba(6, 214, 160, 0.06),
+        0 0 0 1px rgba(6, 214, 160, 0.15) !important;
 }
 
 .stChatInputContainer textarea {
-    color: white !important;
+    color: var(--text-primary) !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.95rem !important;
+    caret-color: var(--accent-cyan) !important;
 }
 
-/* Sidebar */
+.stChatInputContainer textarea::placeholder {
+    color: var(--text-muted) !important;
+    font-weight: 300;
+}
+
+/* Send button in chat */
+.stChatInputContainer button {
+    background: var(--gradient-brand) !important;
+    border: none !important;
+    border-radius: var(--radius-sm) !important;
+    transition: all 0.3s ease !important;
+}
+
+.stChatInputContainer button:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 0 20px rgba(6, 214, 160, 0.3) !important;
+}
+
+/* ── Sidebar — Control Deck ──────────────────────────────────────────────── */
 [data-testid="stSidebar"] {
-    background: rgba(13, 15, 20, 0.95) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+    background: rgba(8, 12, 24, 0.95) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(20px) !important;
 }
 
-[data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2 {
-    color: #f8fafc !important;
+[data-testid="stSidebar"]::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 200px 300px at 0% 30%, rgba(6, 214, 160, 0.04), transparent),
+        radial-gradient(ellipse 200px 200px at 100% 80%, rgba(139, 92, 246, 0.03), transparent);
+    pointer-events: none;
 }
 
-/* Success/Error Alerts */
+[data-testid="stSidebar"] h1,
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3 {
+    color: var(--text-primary) !important;
+    -webkit-text-fill-color: var(--text-primary) !important;
+    background: none !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+}
+
+/* Sidebar success alert — role badge */
+[data-testid="stSidebar"] [data-testid="stAlert"] {
+    background: rgba(6, 214, 160, 0.06) !important;
+    border: 1px solid rgba(6, 214, 160, 0.15) !important;
+    border-left: 3px solid var(--accent-cyan) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 12px 16px !important;
+}
+
+/* Sidebar code block */
+[data-testid="stSidebar"] code {
+    background: rgba(139, 92, 246, 0.08) !important;
+    color: var(--accent-violet) !important;
+    border: 1px solid rgba(139, 92, 246, 0.15) !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 6px 14px !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 0.82rem !important;
+    font-weight: 500 !important;
+}
+
+/* Sidebar logout button */
+[data-testid="stSidebar"] .stButton > button {
+    background: rgba(244, 63, 94, 0.08) !important;
+    color: var(--accent-rose) !important;
+    border: 1px solid rgba(244, 63, 94, 0.2) !important;
+    box-shadow: none !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    font-size: 0.8rem !important;
+    letter-spacing: 0.06em !important;
+    width: 100%;
+}
+
+[data-testid="stSidebar"] .stButton > button:hover {
+    background: rgba(244, 63, 94, 0.15) !important;
+    border-color: rgba(244, 63, 94, 0.4) !important;
+    box-shadow: 0 0 20px rgba(244, 63, 94, 0.1) !important;
+    transform: none !important;
+}
+
+/* ── Alerts ───────────────────────────────────────────────────────────────── */
 div[data-testid="stAlert"] {
-    background: rgba(255, 255, 255, 0.03) !important;
-    border-radius: 8px !important;
-    border-left: 4px solid #6366f1 !important;
-}
-div[data-testid="stAlert"]:has(> div:contains("Success")) {
-    border-left-color: #10b981 !important;
-}
-div[data-testid="stAlert"]:has(> div:contains("Error")) {
-    border-left-color: #ef4444 !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: var(--radius-md) !important;
+    backdrop-filter: blur(10px) !important;
 }
 
-/* Headings */
-h1, h2, h3 {
-    background: linear-gradient(to right, #ffffff, #94a3b8);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 700 !important;
+/* ── Spinner ──────────────────────────────────────────────────────────────── */
+.stSpinner > div {
+    border-top-color: var(--accent-cyan) !important;
 }
 
-/* Animations */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+.stSpinner > div > div {
+    color: var(--text-secondary) !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Code blocks in chat ──────────────────────────────────────────────────── */
+.stChatMessage pre {
+    background: rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 16px !important;
+}
+
+.stChatMessage code {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 0.85rem !important;
+}
+
+/* ── Selection color ──────────────────────────────────────────────────────── */
+::selection {
+    background: rgba(6, 214, 160, 0.3);
+    color: white;
+}
+
+/* ── Responsive polish ────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .main .block-container {
+        padding: 1rem !important;
+    }
+    h1 { font-size: 1.6rem !important; }
 }

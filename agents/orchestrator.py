@@ -16,8 +16,12 @@ import os
 from langchain.agents import create_agent
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.store.memory import InMemoryStore
-from langchain_mcp_adapters.client import MultiServerMCPClient
-from langchain_mcp_adapters.tools import load_mcp_tools
+try:
+    from langchain_mcp_adapters.client import MultiServerMCPClient
+    from langchain_mcp_adapters.tools import load_mcp_tools
+    _MCP_AVAILABLE = True
+except ImportError:
+    _MCP_AVAILABLE = False
 
 from config import GEMINI_MODEL, GOOGLE_API_KEY
 from prompts.system_prompts import ORCHESTRATOR_SYSTEM_PROMPT
@@ -79,6 +83,8 @@ class KaranAgenticRAG:
 
         try:
             if self._needs_mcp(safe_query):
+                if not _MCP_AVAILABLE:
+                    return "Meeting/email features require the `langchain-mcp-adapters` package. Please install it to use this feature."
                 # --- MCP path: spawn MeetingScheduler only when needed ---
                 import sys
                 mcp_server_path = os.path.join(
