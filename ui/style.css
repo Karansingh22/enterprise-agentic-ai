@@ -38,13 +38,25 @@ html, body, [class*="css"] {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Hide Streamlit Chrome ───────────────────────────────────────────────── */
-header { visibility: hidden !important; height: 0 !important; }
+/* ── Hide Streamlit Chrome (preserve sidebar toggle) ─────────────────────── */
+header[data-testid="stHeader"] {
+    background: transparent !important;
+    backdrop-filter: none !important;
+}
 footer { visibility: hidden !important; height: 0 !important; }
 #MainMenu { visibility: hidden !important; }
 .stDeployButton { display: none !important; }
 [data-testid="stToolbar"] { display: none !important; }
 [data-testid="stDecoration"] { display: none !important; }
+[data-testid="stStatusWidget"] { display: none !important; }
+
+/* Keep sidebar collapse/expand button visible and styled */
+[data-testid="stSidebarCollapsedControl"] {
+    color: var(--text-secondary) !important;
+}
+button[data-testid="stSidebarCollapseButton"] {
+    color: var(--text-secondary) !important;
+}
 
 /* ── Living Aurora Background ────────────────────────────────────────────── */
 .stApp {

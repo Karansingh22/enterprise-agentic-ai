@@ -61,18 +61,25 @@ class KaranAgenticRAG:
                      "send meeting", "book a meeting", "set up a meeting", "draft meeting"}
 
     @staticmethod
-    def _needs_mcp(query: str) -> bool:
-        """Fast keyword check — returns True only when the query looks meeting/email-related."""
+    def _has_meeting_context(query: str, chat_history: list) -> bool:
+        """Returns True when the query or recent chat history involves meetings."""
         q = query.lower()
-        return any(kw in q for kw in KaranAgenticRAG._MCP_KEYWORDS)
+        if any(kw in q for kw in KaranAgenticRAG._MCP_KEYWORDS):
+            return True
+        # Check if recent history contains a draft — user might be saying "yes, send it"
+        for msg in chat_history[-4:]:
+            content = msg.get("content", "") if isinstance(msg, dict) else ""
+            if "draft id" in content.lower() or "send_meeting_email" in content.lower():
+                return True
+        return False
 
     async def _aquery(self, safe_query: str, chat_history: list, role: str) -> str:
-        """Async internal implementation of query. Only opens an MCP session when needed."""
+        """Async internal implementation of query."""
         # 1. Base tools (always available)
         kb_tool = get_kb_search_tool(role_filter=role)
         all_tools = [kb_tool]
 
-        # 2. Format messages (shared by both paths)
+        # 2. Format messages
         messages = []
         for msg in chat_history:
             if isinstance(msg, dict):
@@ -82,7 +89,7 @@ class KaranAgenticRAG:
         messages.append({"role": "user", "content": safe_query})
 
         try:
-            if self._needs_mcp(safe_query):
+            if self._has_meeting_context(safe_query, chat_history):
                 if not _MCP_AVAILABLE:
                     return "Meeting/email features require the `langchain-mcp-adapters` package. Please install it to use this feature."
                 # --- MCP path: spawn MeetingScheduler only when needed ---
@@ -149,7 +156,12 @@ class KaranAgenticRAG:
             )
 
         # -- 2. PII Scrub ---------------------------------------
-        safe_query = scrub_pii(user_query)
+        # Skip PII scrubbing for meeting/email queries — the email
+        # addresses are destinations, not sensitive data to mask.
+        if self._has_meeting_context(user_query, chat_history):
+            safe_query = user_query
+        else:
+            safe_query = scrub_pii(user_query)
 
         # -- 3. Execute Async Pipeline --------------------------
         return asyncio.run(self._aquery(safe_query, chat_history, role))
