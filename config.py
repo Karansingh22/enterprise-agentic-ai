@@ -11,7 +11,7 @@ GOOGLE_API_KEY   = os.getenv("GOOGLE_API_KEY")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 
 # -- Email / SMTP Config --------------------------------------
-MAIL_SENDER   = os.getenv("MAIL_SENDER", "ai.noreplaykaransystem@gmail.com")
+MAIL_SENDER   = os.getenv("MAIL_SENDER", "ai.noreplykaransystem@gmail.com")
 MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "")
 SMTP_HOST     = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT     = int(os.getenv("SMTP_PORT", "587"))

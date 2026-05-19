@@ -80,7 +80,7 @@ if not st.session_state.logged_in:
 
             email = st.text_input(
                 "Corporate Email",
-                placeholder="you@karansystems.ai"
+                placeholder="ai.noreplykaransystem@gmail.com"
             )
 
             password = st.text_input(
@@ -135,74 +135,50 @@ role = user["role"]
 
 with st.sidebar:
 
-    st.markdown(f"""
-    <div class="sidebar-brand">
-
-        <div class="sidebar-logo">
-            ◆
-        </div>
-
-        <div>
-            <div class="sidebar-title">
-                KARAN SYSTEMS
-            </div>
-
-            <div class="sidebar-subtitle">
-                AGENTIC RAG v2.0
-            </div>
-        </div>
-
+    st.markdown("""
+    <div class="sidebar-new-chat">
+        <button class="new-chat-btn">NEW CHAT</button>
     </div>
     """, unsafe_allow_html=True)
-
-    st.markdown("### Workspace")
-
-    if st.button("＋ New Chat", use_container_width=True):
+    
+    if st.button("NEW CHAT", key="new_chat_hidden"):
         st.session_state.messages = []
         st.rerun()
 
-    st.markdown("<div class='sidebar-divider'></div>",
-                unsafe_allow_html=True)
-
-    st.markdown(f"""
-    <div class="user-card">
-
-        <div class="avatar">
-            {user['name'][0]}
+    st.markdown("""
+    <div class="sidebar-menu">
+        <div class="menu-label">WORKSPACE</div>
+        
+        <div class="menu-label mt-4">RECENT CHATS</div>
+        <div class="chat-item">
+            <span class="chat-icon">📄</span>
+            <span class="chat-text">Q2 STRATEGY</span>
         </div>
-
-        <div>
-            <div class="user-name">
-                {user['name']}
-            </div>
-
-            <div class="user-role">
-                {role.replace("_", " ").title()}
-            </div>
+        <div class="chat-item">
+            <span class="chat-icon">🐍</span>
+            <span class="chat-text">PYTHON DEBUG</span>
         </div>
-
+        <div class="chat-item">
+            <span class="chat-icon">📊</span>
+            <span class="chat-text">MULTI ANALYSIS</span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("### Access")
-
-    access = ROLE_ACCESS.get(role, [])
-
-    for a in access:
-        st.markdown(
-            f"<div class='access-tag'>{a}</div>",
-            unsafe_allow_html=True
-        )
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    if st.button("⏻ Sign Out", use_container_width=True):
-
-        st.session_state.logged_in = False
-        st.session_state.user_data = None
-        st.session_state.messages = []
-
-        st.rerun()
+    st.markdown(f"""
+    <div class="sidebar-bottom">
+        <div class="user-profile">
+            <div class="avatar-img">
+                <img src="https://ui-avatars.com/api/?name={user['name'].replace(' ', '+')}&background=random&color=fff" alt="User">
+            </div>
+            <div class="user-info">
+                <div class="user-name">{user['name'].upper()}</div>
+                <div class="user-role">{role.replace("_", " ").upper()}</div>
+            </div>
+            <div class="user-menu-icon">⌄</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # =========================================================
 # HERO SECTION
@@ -228,34 +204,18 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # =========================================================
-# TOP METRICS
+# MAIN APP HEADER
 # =========================================================
 
-c1, c2, c3 = st.columns(3)
-
-with c1:
-    st.markdown("""
-    <div class="metric-card">
-        <div class="metric-label">ACTIVE AGENTS</div>
-        <div class="metric-value">12</div>
+st.markdown("""
+<div class="command-deck-header">
+    COMMAND DECK
+    <div class="deck-icons">
+        <span class="icon">◫</span>
+        <span class="icon">⋮</span>
     </div>
-    """, unsafe_allow_html=True)
-
-with c2:
-    st.markdown("""
-    <div class="metric-card">
-        <div class="metric-label">VECTOR INDEX</div>
-        <div class="metric-value">4.2M</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with c3:
-    st.markdown("""
-    <div class="metric-card">
-        <div class="metric-label">LATENCY</div>
-        <div class="metric-value">128ms</div>
-    </div>
-    """, unsafe_allow_html=True)
+</div>
+""", unsafe_allow_html=True)
 
 # =========================================================
 # LOAD AGENT
@@ -281,7 +241,7 @@ for msg in st.session_state.messages:
 # =========================================================
 
 prompt = st.chat_input(
-    "Ask about incidents, policies, HR, infrastructure..."
+    "Type a message..."
 )
 
 if prompt:
