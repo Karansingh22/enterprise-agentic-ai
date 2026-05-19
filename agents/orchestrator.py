@@ -97,11 +97,26 @@ class KaranAgenticRAG:
                 mcp_server_path = os.path.join(
                     os.path.dirname(os.path.dirname(__file__)), "tools", "mcp_server.py"
                 )
+                # Prepare environment variables for the subprocess
+                env_vars = dict(os.environ)
+                try:
+                    import streamlit as st
+                    # Explicitly inject Streamlit secrets into the subprocess environment
+                    # This ensures the MCP server has access to MAIL_PASSWORD even if Streamlit
+                    # hasn't fully propagated it to the system os.environ.
+                    if hasattr(st, "secrets"):
+                        for k, v in st.secrets.items():
+                            if isinstance(v, (str, int, float, bool)):
+                                env_vars[k] = str(v)
+                except Exception:
+                    pass
+
                 client = MultiServerMCPClient({
                     "MeetingScheduler": {
                         "transport": "stdio",
                         "command": sys.executable,
                         "args": [mcp_server_path],
+                        "env": env_vars,
                     }
                 })
                 async with client.session("MeetingScheduler") as session:
