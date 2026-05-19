@@ -11,7 +11,7 @@ st.set_page_config(
     page_title=f"{COMPANY} — Agentic RAG",
     page_icon="◆",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 # =========================================================
@@ -59,22 +59,22 @@ if not st.session_state.logged_in:
     with col2:
 
         st.markdown("""
-        <div class="login-wrapper">
+<div class="login-wrapper">
 
-            <div class="brand-orb">
-                ◆
-            </div>
+    <div class="brand-orb">
+        ◆
+    </div>
 
-            <div class="brand-title">
-                KARAN SYSTEMS
-            </div>
+    <div class="brand-title">
+        KARAN SYSTEMS
+    </div>
 
-            <div class="brand-subtitle">
-                AGENTIC RAG COMMAND CENTER
-            </div>
+    <div class="brand-subtitle">
+        AGENTIC RAG COMMAND CENTER
+    </div>
 
-        </div>
-        """, unsafe_allow_html=True)
+</div>
+""", unsafe_allow_html=True)
 
         with st.form("login_form"):
 
@@ -115,10 +115,10 @@ if not st.session_state.logged_in:
                 st.error("Authentication failed.")
 
         st.markdown("""
-        <div class="security-footer">
-            ● End-to-end encrypted · SOC2 compliant · RBAC enforced
-        </div>
-        """, unsafe_allow_html=True)
+<div class="security-footer">
+    ● End-to-end encrypted · SOC2 compliant · RBAC enforced
+</div>
+""", unsafe_allow_html=True)
 
     st.stop()
 
@@ -136,72 +136,50 @@ role = user["role"]
 with st.sidebar:
 
     st.markdown("""
-    <div class="sidebar-new-chat">
-        <button class="new-chat-btn">NEW CHAT</button>
-    </div>
-    """, unsafe_allow_html=True)
+<div class="sidebar-new-chat">
+    <button class="new-chat-btn">NEW CHAT</button>
+</div>
+""", unsafe_allow_html=True)
     
     if st.button("NEW CHAT", key="new_chat_hidden"):
         st.session_state.messages = []
         st.rerun()
 
     st.markdown("""
-    <div class="sidebar-menu">
-        <div class="menu-label">WORKSPACE</div>
-        
-        <div class="menu-label mt-4">RECENT CHATS</div>
-        <div class="chat-item">
-            <span class="chat-icon">📄</span>
-            <span class="chat-text">Q2 STRATEGY</span>
-        </div>
-        <div class="chat-item">
-            <span class="chat-icon">🐍</span>
-            <span class="chat-text">PYTHON DEBUG</span>
-        </div>
-        <div class="chat-item">
-            <span class="chat-icon">📊</span>
-            <span class="chat-text">MULTI ANALYSIS</span>
-        </div>
+<div class="sidebar-menu">
+    <div class="menu-label">WORKSPACE</div>
+    
+    <div class="menu-label mt-4">RECENT CHATS</div>
+    <div class="chat-item">
+        <span class="chat-icon">📄</span>
+        <span class="chat-text">Q2 STRATEGY</span>
     </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown(f"""
-    <div class="sidebar-bottom">
-        <div class="user-profile">
-            <div class="avatar-img">
-                <img src="https://ui-avatars.com/api/?name={user['name'].replace(' ', '+')}&background=random&color=fff" alt="User">
-            </div>
-            <div class="user-info">
-                <div class="user-name">{user['name'].upper()}</div>
-                <div class="user-role">{role.replace("_", " ").upper()}</div>
-            </div>
-            <div class="user-menu-icon">⌄</div>
-        </div>
+    <div class="chat-item">
+        <span class="chat-icon">🐍</span>
+        <span class="chat-text">PYTHON DEBUG</span>
     </div>
-    """, unsafe_allow_html=True)
-
-# =========================================================
-# HERO SECTION
-# =========================================================
-
-st.markdown(f"""
-<div class="hero-wrapper">
-
-    <div class="hero-badge">
-        AGENTIC RAG COMMAND CENTER
+    <div class="chat-item">
+        <span class="chat-icon">📊</span>
+        <span class="chat-text">MULTI ANALYSIS</span>
     </div>
-
-    <div class="hero-title">
-        Welcome back, {user['name']}
-    </div>
-
-    <div class="hero-subtitle">
-        Enterprise intelligence orchestration powered by
-        autonomous multi-agent reasoning systems.
-    </div>
-
 </div>
 """, unsafe_allow_html=True)
+
+    st.markdown(f"""
+<div class="sidebar-bottom">
+    <div class="user-profile">
+        <div class="avatar-img">
+            <img src="https://ui-avatars.com/api/?name={user['name'].replace(' ', '+')}&background=random&color=fff" alt="User">
+        </div>
+        <div class="user-info">
+            <div class="user-name">{user['name'].upper()}</div>
+            <div class="user-role">{role.replace("_", " ").upper()}</div>
+        </div>
+        <div class="user-menu-icon">⌄</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
 
 # =========================================================
 # MAIN APP HEADER
