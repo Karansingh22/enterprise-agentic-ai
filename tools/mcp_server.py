@@ -104,7 +104,6 @@ def send_meeting_email(draft_id: str) -> str:
     body = f"""
     You have been invited to a meeting.
     
-    Subject: {draft['subject']}
     Date & Time: {draft['date_time']}
     Duration: {draft['duration_minutes']} minutes
     
