@@ -10,7 +10,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from pydantic import BaseModel, Field
 from mcp.server.fastmcp import FastMCP
-from config import MAIL_SENDER, MAIL_PASSWORD, SMTP_HOST, SMTP_PORT
+from config import MAIL_SENDER, MAIL_PASSWORD, SMTP_HOST, SMTP_PORT, GOOGLE_MEET_LINK
 import json
 import uuid
 import os
@@ -32,8 +32,12 @@ def save_drafts(drafts):
 
 def generate_meet_link() -> str:
     """
-    Generates a unique, realistic mock Google Meet link.
+    Generates a Google Meet link. Uses GOOGLE_MEET_LINK from config if provided,
+    otherwise falls back to generating a realistic mock Google Meet link.
     """
+    if GOOGLE_MEET_LINK:
+        return GOOGLE_MEET_LINK
+        
     import random
     import string
     part1 = "".join(random.choices(string.ascii_lowercase, k=3))
@@ -118,9 +122,10 @@ def send_meeting_email(draft_id: str) -> str:
     
     meet_link = draft.get('meeting_link', '')
     
-    body = f"""You have been invited to a meeting.
+    body = f"""Hello,
 
-Subject: {draft['subject']}
+I hope you are doing well. You are invited to attend a meeting regarding {draft['subject']}. We will review the agenda and align on the next steps together.
+
 Date & Time: {draft['date_time']}
 Duration: {draft['duration_minutes']} minutes
 Meeting Link (Google Meet): {meet_link}

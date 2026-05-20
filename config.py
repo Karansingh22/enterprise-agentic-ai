@@ -15,6 +15,7 @@ MAIL_SENDER   = os.getenv("MAIL_SENDER", "ai.noreplykaransystem@gmail.com")
 MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "")
 SMTP_HOST     = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT     = int(os.getenv("SMTP_PORT", "587"))
+GOOGLE_MEET_LINK = os.getenv("GOOGLE_MEET_LINK", "")
 
 
 # -- Model Configuration --------------------------------------
