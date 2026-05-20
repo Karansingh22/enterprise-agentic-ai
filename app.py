@@ -100,7 +100,10 @@ if not st.session_state.logged_in:
 
                 if record and record["password"] == password:
                     st.session_state.logged_in = True
-                    st.session_state.user_data = record
+                    # Copy record and inject the verified email field
+                    user_data = record.copy()
+                    user_data["email"] = email.strip()
+                    st.session_state.user_data = user_data
                     st.session_state.messages = []
                     st.session_state.current_session_id = None
                     st.rerun()
