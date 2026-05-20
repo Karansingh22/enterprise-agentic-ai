@@ -441,7 +441,7 @@ tabChat.addEventListener("click", () => {
 
     panelChat.classList.remove("hidden");
     panelSchedule.classList.add("hidden");
-    deckTitle.textContent = "COMMAND DECK";
+    deckTitle.textContent = "";
 });
 
 tabSchedule.addEventListener("click", () => {
@@ -518,6 +518,12 @@ async function loadMeetings() {
                 <div class="font-bold text-slate-400 mb-1 text-xxs uppercase tracking-wider">Agenda</div>
                 <p class="whitespace-pre-wrap">${escapeHtml(meeting.agenda)}</p>
             </div>
+
+            ${meeting.meeting_link ? `
+            <div class="text-xs text-cyan-400 font-medium bg-cyan-500/5 border border-cyan-500/10 p-3 rounded-xl flex items-center gap-2">
+                <span class="text-sm">🔗</span> <strong>Google Meet:</strong> <a href="${meeting.meeting_link}" target="_blank" class="hover:underline flex-1 truncate">${escapeHtml(meeting.meeting_link)}</a>
+            </div>
+            ` : ''}
 
             <div class="flex justify-between items-center gap-4 flex-wrap">
                 <div class="flex items-center gap-1.5 flex-wrap">

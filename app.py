@@ -84,7 +84,7 @@ if not st.session_state.logged_in:
         with st.form("login_form"):
             email = st.text_input(
                 "Corporate Email",
-                placeholder="singh@karansystem.com"
+                placeholder="email@karansystem.com"
             )
 
             password = st.text_input(
@@ -151,13 +151,13 @@ with st.sidebar:
                 st.rerun()
 
     # Display user profile at the bottom of sidebar
-    st.html(f"""<div class="sidebar-bottom"><div class="user-profile"><div class="avatar-img"><img src="https://ui-avatars.com/api/?name={user['name'].replace(' ', '+')}&background=00ffe5&color=030712" alt="User"></div><div class="user-info"><div class="user-name">{user['name'].upper()}</div><div class="user-role">{role.replace("_", " ").upper()}</div></div><div class="user-menu-icon">⌄</div></div></div>""")
+    st.html(f"""<div class="sidebar-bottom"><div class="user-profile"><div class="avatar-img"><img src="https://ui-avatars.com/api/?name={user['name'].replace(' ', '+')}&background=00ffe5&color=030712" alt="User"></div><div class="user-info"><div class="user-name">{user['name'].upper()}</div><div class="user-role">{role.replace("_", " ").upper()}</div></div></div></div>""")
 
 # =========================================================
 # MAIN APP HEADER
 # =========================================================
 
-st.html(f"""<div class="command-deck-header"><div>COMMAND DECK <span class="ml-4 text-xs font-semibold px-2 py-1 bg-white/5 border border-white/5 rounded-full text-slate-400">Welcome back, {user['name']} · {role.replace('_', ' ').lower()}</span></div><div class="deck-icons"><span class="icon">◫</span><span class="icon">⋮</span></div></div>""")
+st.html(f"""<div class="command-deck-header"><div><span class="text-xs font-semibold px-2 py-1 bg-white/5 border border-white/5 rounded-full text-slate-400">Welcome back, {user['name']} · {role.replace('_', ' ').lower()}</span></div></div>""")
 
 # =========================================================
 # LOAD AGENT
@@ -180,7 +180,7 @@ with tab_chat:
     # CHAT HISTORY
     if not st.session_state.messages:
         with st.chat_message("assistant"):
-            st.markdown(f"Hello {user['name']}! I'm your enterprise AI assistant. How can I help you today?")
+            st.markdown(f"Hello {user['name']}! I'm your AI assistant. How can I help you today?")
     else:
         for msg in st.session_state.messages:
             with st.chat_message(msg["role"]):
@@ -269,6 +269,9 @@ with tab_calendar:
                     # Format participant list with code tags to prevent blue underlines
                     participants_formatted = ", ".join([f"`{p}`" for p in meeting['participants']])
                     st.markdown(f"**Participants:** {participants_formatted}")
+
+                    if meeting.get("meeting_link"):
+                        st.markdown(f"🔗 **Google Meet Link:** [{meeting['meeting_link']}]({meeting['meeting_link']})")
 
                     ics_data = generate_ics_content(meeting, MAIL_SENDER)
                     st.download_button(
