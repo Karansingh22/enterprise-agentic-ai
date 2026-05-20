@@ -128,6 +128,53 @@ def send_meeting_email(draft_id: str) -> str:
     except Exception as e:
         return f"Failed to send email via SMTP. Error: {str(e)}"
 
+def generate_ics_content(meeting: dict, mail_sender: str) -> str:
+    """
+    Generates standard ICS calendar invite content.
+    """
+    import datetime
+    dt_str = meeting.get("date_time", "")
+    
+    # Simple parse attempt, fallback if it is not custom formatted
+    try:
+        # Standard formats like "YYYY-MM-DD HH:MM" or ISO "YYYY-MM-DDTHH:MM:SS"
+        import dateutil.parser
+        dt_parsed = dateutil.parser.parse(dt_str)
+    except Exception:
+        try:
+            dt_parsed = datetime.datetime.fromisoformat(dt_str)
+        except Exception:
+            dt_parsed = datetime.datetime.now()
+            
+    dt_start_str = dt_parsed.strftime("%Y%m%dT%H%M%SZ")
+    duration = meeting.get("duration_minutes", 30)
+    dt_end = dt_parsed + datetime.timedelta(minutes=duration)
+    dt_end_str = dt_end.strftime("%Y%m%dT%H%M%SZ")
+    
+    ics_lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Karan Systems//Meeting Scheduler//EN",
+        "CALSCALE:GREGORIAN",
+        "METHOD:REQUEST",
+        "BEGIN:VEVENT",
+        f"UID:{meeting.get('id', 'uid')}@karansystem.com",
+        f"DTSTAMP:{datetime.datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')}",
+        f"DTSTART:{dt_start_str}",
+        f"DTEND:{dt_end_str}",
+        f"SUMMARY:{meeting.get('subject', 'Meeting Invite')}",
+        f"DESCRIPTION:{meeting.get('agenda', '')}",
+        f"ORGANIZER;CN=Karan Systems BOT:MAILTO:{mail_sender}",
+    ]
+    for p in meeting.get("participants", []):
+        ics_lines.append(f"ATTENDEE;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:MAILTO:{p}")
+    
+    ics_lines.extend([
+        "END:VEVENT",
+        "END:VCALENDAR"
+    ])
+    return "\n".join(ics_lines)
+
 if __name__ == "__main__":
     # Run the server via stdio transport
     mcp.run(transport="stdio")
