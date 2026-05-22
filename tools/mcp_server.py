@@ -32,18 +32,12 @@ def save_drafts(drafts):
 
 def generate_meet_link() -> str:
     """
-    Generates a Google Meet link. Uses GOOGLE_MEET_LINK from config if provided,
-    otherwise falls back to generating a realistic mock Google Meet link.
+    Returns the Google Meet link. Uses GOOGLE_MEET_LINK from config if provided,
+    otherwise falls back to the default permanent meeting room.
     """
     if GOOGLE_MEET_LINK:
         return GOOGLE_MEET_LINK
-        
-    import random
-    import string
-    part1 = "".join(random.choices(string.ascii_lowercase, k=3))
-    part2 = "".join(random.choices(string.ascii_lowercase, k=4))
-    part3 = "".join(random.choices(string.ascii_lowercase, k=3))
-    return f"https://meet.google.com/{part1}-{part2}-{part3}"
+    return "https://meet.google.com/frx-fpae-bva"
 
 class MeetingDraft(BaseModel):
     id: str
