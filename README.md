@@ -229,13 +229,6 @@ Edit `config.py`:
 ROLE_ACCESS["auditor"] = ["kb", "policies", "incidents", "logs"]
 ```
 
-### Switch Gemini model
-In `.env`:
-```
-GEMINI_MODEL=gemini-1.5-pro    # higher quality, slower
-GEMINI_MODEL=gemini-1.5-flash  # faster, cheaper (default)
-```
-
 ---
 
 ## 📊 Data Overview
