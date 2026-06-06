@@ -1,0 +1,534 @@
+:root {
+    --bg: #030712;
+    --panel: rgba(255, 255, 255, 0.02);
+    --border: rgba(255, 255, 255, 0.08);
+
+    --cyan: #00ffe5;
+    --violet: #8b5cf6;
+    --blue: #3b82f6;
+
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+}
+
+body {
+    background: var(--bg);
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+}
+
+#MainMenu, footer {
+    display: none !important;
+}
+
+/* Hide standard Streamlit header bar background but preserve the expand controls */
+[data-testid="stHeader"] {
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Make the collapsed sidebar expand toggle visible and style it beautifully */
+[data-testid="collapsedControl"] {
+    display: flex !important;
+    visibility: visible !important;
+    z-index: 999999 !important;
+    background: rgba(10, 15, 30, 0.45) !important;
+    border: 1px solid rgba(0, 255, 229, 0.2) !important;
+    border-radius: 50% !important;
+    backdrop-filter: blur(20px) !important;
+    top: 16px !important;
+    left: 16px !important;
+    width: 38px !important;
+    height: 38px !important;
+    justify-content: center !important;
+    align-items: center !important;
+    box-shadow: 0 0 20px rgba(0, 255, 229, 0.25) !important;
+    transition: all 0.3s ease !important;
+}
+
+[data-testid="collapsedControl"]:hover {
+    background: rgba(0, 255, 229, 0.15) !important;
+    box-shadow: 0 0 30px rgba(0, 255, 229, 0.4) !important;
+    transform: scale(1.05) !important;
+}
+
+[data-testid="collapsedControl"] svg {
+    fill: var(--cyan) !important;
+    color: var(--cyan) !important;
+}
+
+.stAppDeployButton {
+    display: none !important;
+}
+
+.stApp {
+    background: transparent !important;
+}
+
+/* Streamlit Inputs styling */
+.stTextInput input {
+    background: rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    color: white !important;
+    padding: 12px 16px !important;
+    font-size: 0.95rem !important;
+    transition: 0.3s ease;
+}
+
+.stTextInput input:focus {
+    border-color: rgba(0, 255, 229, 0.5) !important;
+    box-shadow: 0 0 15px rgba(0, 255, 229, 0.2);
+}
+
+/* Streamlit Buttons styling */
+.stButton button {
+    width: 100% !important;
+    border-radius: 12px !important;
+    background: linear-gradient(90deg, #00ffe5, #3b82f6, #8b5cf6) !important;
+    color: white !important;
+    border: none !important;
+    font-weight: 700 !important;
+    padding: 12px !important;
+    transition: 0.3s ease !important;
+    box-shadow: 0 0 20px rgba(0, 255, 229, 0.2) !important;
+}
+
+.stButton button:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 0 30px rgba(0, 255, 229, 0.4) !important;
+    color: white !important;
+    border: none !important;
+}
+
+/* Streamlit Chat Message override */
+[data-testid="chat-message-user"] .stChatMessageContent {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(76, 29, 149, 0.45)) !important;
+    border: 1px solid rgba(139, 92, 246, 0.25) !important;
+    border-radius: 16px 16px 4px 16px !important;
+    box-shadow: 0 8px 32px rgba(139, 92, 246, 0.1) !important;
+}
+
+[data-testid="chat-message-assistant"] .stChatMessageContent {
+    background: rgba(10, 15, 25, 0.6) !important;
+    border: 1px solid rgba(0, 255, 229, 0.15) !important;
+    border-left: 4px solid var(--cyan) !important;
+    border-radius: 16px 16px 16px 4px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+}
+
+.stChatMessage [data-testid="stIcon"] {
+    background-color: transparent !important;
+}
+
+/* =========================================================
+   AURORA BACKGROUND & PARALLAX STARS
+ ========================================================= */
+
+.aurora-bg {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: -10;
+    pointer-events: none;
+}
+
+.aurora {
+    position: absolute;
+    width: 50vw;
+    height: 50vw;
+    border-radius: 50%;
+    filter: blur(140px);
+    opacity: 0.15;
+    animation: floatAurora 25s ease-in-out infinite alternate;
+}
+
+.aurora1 { background: var(--cyan); top: -10%; left: -10%; animation-duration: 20s; }
+.aurora2 { background: var(--violet); top: 40%; right: -10%; animation-duration: 28s; }
+.aurora3 { background: var(--blue); bottom: -10%; left: 30%; animation-duration: 24s; }
+
+@keyframes floatAurora {
+    0% { transform: translateY(0px) translateX(0px) scale(1); }
+    50% { transform: translateY(60px) translateX(-30px) scale(1.15); }
+    100% { transform: translateY(-40px) translateX(40px) scale(0.9); }
+}
+
+.star-field {
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(white 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.04;
+    animation: starsMove 200s linear infinite;
+    pointer-events: none;
+    z-index: -9;
+}
+
+@keyframes starsMove {
+    from { transform: translateY(0px); }
+    to { transform: translateY(-600px); }
+}
+
+/* =========================================================
+   LOGIN AESTHETICS
+ ========================================================= */
+
+.login-wrapper {
+    text-align: center;
+    margin-top: 60px;
+    margin-bottom: 20px;
+}
+
+.brand-orb {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--cyan), var(--blue), var(--violet));
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.25rem;
+    font-weight: 800;
+    box-shadow: 0 0 45px rgba(0, 255, 229, 0.45);
+    animation: orbFloat 6s ease-in-out infinite;
+    color: white;
+}
+
+@keyframes orbFloat {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(180deg); }
+}
+
+.brand-title {
+    margin-top: 20px;
+    font-size: 2.25rem;
+    font-weight: 900;
+    background: linear-gradient(to right, #ffffff, #c2e9fb, #e0c3fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 0.05em;
+}
+
+.brand-subtitle {
+    color: var(--muted);
+    margin-top: 8px;
+    letter-spacing: 0.15em;
+    font-size: 0.75rem;
+}
+
+.login-card {
+    background: rgba(10, 15, 30, 0.45);
+    backdrop-filter: blur(25px) saturate(160%);
+    box-shadow: 
+        0 25px 65px rgba(0, 0, 0, 0.7),
+        0 0 50px rgba(0, 255, 229, 0.08),
+        0 0 50px rgba(139, 92, 246, 0.08);
+}
+
+.login-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    padding: 1.5px;
+    background: linear-gradient(135deg, rgba(0, 255, 229, 0.4), transparent 45%, transparent 55%, rgba(139, 92, 246, 0.4));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+.security-footer {
+    text-align: center;
+    color: #64748b;
+    margin-top: 24px;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+/* =========================================================
+   SIDEBAR & LAYOUT
+ ========================================================= */
+
+.text-xxs {
+    font-size: 0.65rem;
+}
+
+.new-chat-btn {
+    box-shadow: 0 0 20px rgba(0, 255, 229, 0.2);
+}
+
+.new-chat-btn:hover {
+    box-shadow: 0 0 30px rgba(0, 255, 229, 0.4);
+    transform: translateY(-1px);
+}
+
+.sidebar-menu {
+    padding: 20px 0;
+}
+
+.menu-label {
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+}
+
+.chat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    color: #cbd5e1;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 4px;
+}
+
+.chat-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
+    color: white;
+}
+
+/* User Profile at Bottom */
+.sidebar-bottom {
+    margin-top: auto;
+    padding-top: 15px;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.avatar-img img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+}
+
+.user-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: white;
+}
+
+.user-role {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    letter-spacing: 0.05em;
+}
+
+.user-menu-icon {
+    color: #64748b;
+    font-weight: bold;
+}
+
+/* =========================================================
+   COMMAND DECK (MAIN APP)
+ ========================================================= */
+
+.command-deck-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.deck-icons .icon {
+    margin-left: 12px;
+    color: #64748b;
+    cursor: pointer;
+}
+
+/* =========================================================
+   HTML/JS SPECIFIC CHAT MESSAGES
+ ========================================================= */
+
+.chat-bubble-assistant {
+    background: rgba(10, 15, 25, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 255, 229, 0.15);
+    border-left: 4px solid var(--cyan);
+    border-radius: 16px 16px 16px 4px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chat-bubble-user {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(76, 29, 149, 0.45));
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    border-radius: 16px 16px 4px 16px;
+    box-shadow: 0 8px 32px rgba(139, 92, 246, 0.1);
+    animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-15px) translateY(5px); }
+    to { opacity: 1; transform: translateX(0) translateY(0); }
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(15px) translateY(5px); }
+    to { opacity: 1; transform: translateX(0) translateY(0); }
+}
+
+/* =========================================================
+   MARKDOWN & CHAT TEXT RENDERING
+ ========================================================= */
+
+.markdown-content p {
+    margin-bottom: 0.75rem;
+}
+
+.markdown-content p:last-child {
+    margin-bottom: 0;
+}
+
+.markdown-content strong {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.markdown-content a {
+    color: var(--cyan);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: opacity 0.2s;
+}
+
+.markdown-content a:hover {
+    opacity: 0.8;
+}
+
+.markdown-content ul, .markdown-content ol {
+    margin-left: 1.5rem;
+    margin-bottom: 0.75rem;
+    list-style-type: disc;
+}
+
+.markdown-content ol {
+    list-style-type: decimal;
+}
+
+.markdown-content li {
+    margin-bottom: 0.25rem;
+}
+
+.markdown-content code {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 0.2rem 0.4rem;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 0.85em;
+    color: #ff79c6;
+}
+
+.markdown-content pre {
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 12px;
+    overflow-x: auto;
+    margin-bottom: 0.75rem;
+}
+
+.markdown-content pre code {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: #f8f8f2;
+}
+
+.markdown-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 0.75rem;
+    font-size: 0.9em;
+}
+
+.markdown-content th, .markdown-content td {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.6rem 0.8rem;
+    text-align: left;
+}
+
+.markdown-content th {
+    background: rgba(255, 255, 255, 0.05);
+    font-weight: 600;
+}
+
+.markdown-content tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* =========================================================
+   SCROLLBAR & TRANSITIONS
+ ========================================================= */
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Spinner */
+.spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-top-color: var(--cyan);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

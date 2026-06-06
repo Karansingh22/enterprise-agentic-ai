@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karan Systems — Agentic RAG Command Center</title>
+    <!-- API base: set this to the backend URL in deployment (leave empty for same-origin) -->
+    <meta name="api-base" content="">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Marked.js for Markdown Rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-950 text-slate-100 overflow-hidden font-sans">
+
+    <!-- Aurora animated background -->
+    <div class="aurora-bg">
+        <div class="aurora aurora1"></div>
+        <div class="aurora aurora2"></div>
+        <div class="aurora aurora3"></div>
+    </div>
+
+    <!-- Star-field background -->
+    <div class="star-field"></div>
+
+    <!-- MAIN CONTAINER -->
+    <div id="app" class="relative w-screen h-screen flex items-center justify-center z-10">
+
+        <!-- LOGIN CONTAINER (shown if not logged in) -->
+        <div id="login-container" class="w-full max-w-md px-6 animate-fade-in">
+            <div class="login-wrapper text-center mb-8">
+                <!-- Brand Orb -->
+                <div class="brand-orb text-white">◆</div>
+                <div class="brand-title mt-6 text-4xl font-black uppercase tracking-wide">
+                    KARAN SYSTEMS
+                </div>
+                <div class="brand-subtitle mt-2 text-xs tracking-widest text-slate-400 font-medium">
+                    AGENTIC RAG COMMAND CENTER
+                </div>
+            </div>
+
+            <!-- Login Form Card -->
+            <div class="login-card p-8 rounded-3xl border border-white/10 backdrop-blur-2xl shadow-2xl bg-black/40 relative overflow-hidden">
+                <form id="login-form" class="space-y-6">
+                    <div>
+                        <label for="email" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Corporate Email</label>
+                        <input type="email" id="email" required placeholder="email@karansystem.com" 
+                               class="w-full bg-black/50 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all">
+                    </div>
+                    <div>
+                        <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Password</label>
+                        <input type="password" id="password" required placeholder="••••••••" 
+                               class="w-full bg-black/50 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all">
+                    </div>
+
+                    <div id="login-error" class="hidden text-rose-400 text-sm font-medium text-center bg-rose-500/10 border border-rose-500/20 py-2 rounded-lg">
+                        Authentication failed.
+                    </div>
+
+                    <button type="submit" id="login-btn"
+                            class="w-full rounded-xl py-3.5 bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 text-white font-bold tracking-wider hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/30">
+                        AUTHENTICATE →
+                    </button>
+                </form>
+            </div>
+
+            <div class="security-footer text-center text-slate-500 mt-6 text-xs tracking-wider">
+                ● End-to-end encrypted · SOC2 compliant · RBAC enforced
+            </div>
+        </div>
+
+        <!-- MAIN APP VIEW (shown after login) -->
+        <div id="main-container" class="hidden w-full h-full flex overflow-hidden animate-fade-in">
+
+            <!-- SIDEBAR -->
+            <aside class="w-80 h-full bg-black/45 border-r border-white/5 backdrop-blur-2xl flex flex-col z-20">
+                <!-- Sidebar Top Button -->
+                <div class="p-6 pb-2">
+                    <button id="btn-new-chat" class="new-chat-btn w-full py-3 bg-gradient-to-r from-cyan-400 to-violet-500 text-white font-bold tracking-wider rounded-xl transition-all shadow-lg hover:shadow-cyan-400/20 flex items-center justify-center gap-2">
+                        <span>NEW CHAT</span>
+                    </button>
+                </div>
+
+                <!-- Sidebar Navigation Menu -->
+                <div class="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+                    <div>
+                        <div class="menu-label text-slate-500 text-xs font-bold tracking-widest uppercase mb-3">Navigation</div>
+                        <div class="space-y-1">
+                            <div id="tab-chat" class="chat-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-white bg-white/10 font-bold transition-all cursor-pointer">
+                                <span class="chat-icon">💬</span>
+                                <span class="chat-text text-sm font-semibold">Chat Deck</span>
+                            </div>
+                            <div id="tab-schedule" class="chat-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-all cursor-pointer">
+                                <span class="chat-icon">📅</span>
+                                <span class="chat-text text-sm font-medium">Schedule Deck</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="menu-label text-slate-500 text-xs font-bold tracking-widest uppercase mb-3">Workspace</div>
+                    </div>
+
+                    <div>
+                        <div class="menu-label text-slate-500 text-xs font-bold tracking-widest uppercase mb-3">Recent Chats</div>
+                        <div id="recent-chats-list" class="space-y-1">
+                            <!-- Populated dynamically -->
+                            <div class="text-slate-500 text-xs italic px-3 py-2">No active chats</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Profile Section at bottom -->
+                <div class="p-4 border-t border-white/5 bg-black/20">
+                    <div class="user-profile flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/5 p-3 rounded-2xl transition-all group relative">
+                        <div class="avatar-img w-9 h-9 rounded-full bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center font-bold text-cyan-300 text-sm" id="user-avatar">
+                            --
+                        </div>
+                        <div class="user-info flex-1 min-w-0">
+                            <div class="user-name text-sm font-bold text-white truncate" id="user-name-display">USER NAME</div>
+                            <div class="user-role text-xxs tracking-wider text-slate-400 font-semibold" id="user-role-display">ROLE</div>
+                        </div>
+                        <button id="btn-logout" class="text-slate-500 hover:text-rose-400 p-1.5 rounded-lg hover:bg-white/5 transition-all" title="Logout">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- MAIN CONTENT AREA -->
+            <main class="flex-1 h-full flex flex-col relative bg-transparent z-10">
+                <!-- Header -->
+                <header class="command-deck-header flex items-center justify-between px-8 py-4 bg-white/[0.01] border-b border-white/5 backdrop-blur-md">
+                    <div class="flex items-center gap-3">
+                        <span id="deck-title" class="text-white font-bold tracking-widest text-sm uppercase"></span>
+                        <span id="user-header-welcome" class="text-xs text-slate-400 font-semibold bg-white/5 px-2.5 py-1 rounded-full border border-white/5">Welcome, Admin</span>
+                    </div>
+                </header>
+
+                <!-- PANEL: CHAT DECK -->
+                <div id="panel-chat" class="flex-1 flex flex-col min-h-0">
+                    <!-- Chat Message Logs -->
+                    <div id="chat-messages" class="flex-1 overflow-y-auto px-8 py-6 space-y-6">
+                        <!-- Dynamic chat messages go here -->
+                    </div>
+
+                    <!-- Floating Input Container -->
+                    <div class="px-8 pb-6 bg-gradient-to-t from-gray-950 via-gray-950/90 to-transparent pt-6">
+                        <form id="chat-form" class="max-w-4xl mx-auto">
+                            <div class="stChatInputContainer flex items-center gap-3 bg-slate-900/80 border border-white/10 rounded-2xl px-4 py-2.5 backdrop-blur-2xl shadow-xl focus-within:border-cyan-400/50 transition-all">
+                                <textarea id="chat-input" rows="1" placeholder="Type a message..." required
+                                          class="flex-1 bg-transparent border-none outline-none resize-none text-slate-100 placeholder-slate-500 text-sm py-1.5 focus:ring-0 max-h-32 min-h-[24px]"></textarea>
+
+                                <button type="submit" id="chat-send" class="text-cyan-400 hover:text-cyan-300 p-2 rounded-xl hover:bg-white/5 transition-all">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- PANEL: SCHEDULE DECK -->
+                <div id="panel-schedule" class="hidden flex-1 overflow-y-auto px-8 py-6 space-y-6 min-h-0">
+                    <div class="max-w-4xl mx-auto w-full">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-xl font-bold tracking-wide text-white uppercase flex items-center gap-2">
+                                <span>📅</span> Scheduled Meetings & Invitations
+                            </h2>
+                            <button id="btn-refresh-schedule" class="text-slate-400 hover:text-cyan-400 transition-all px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 flex items-center gap-1.5 text-xs font-semibold">
+                                🔄 Refresh
+                            </button>
+                        </div>
+                        <div id="meetings-list" class="space-y-4">
+                            <!-- Meetings rendered dynamically -->
+                            <div class="text-center py-12 text-slate-500 text-sm font-medium">
+                                No scheduled meetings found. Use the Chat assistant to draft and send new invites.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Script handling routing, api connection and UI updates -->
+    <script src="app.js"></script>
+</body>
+</html>
