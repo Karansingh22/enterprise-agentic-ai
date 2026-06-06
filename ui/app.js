@@ -4,6 +4,10 @@ let currentUser = JSON.parse(localStorage.getItem("current_user"));
 let chatHistory = [];
 let currentSessionId = null;
 
+// API base derived from meta tag in index.html. If empty, relative paths are used (same origin).
+const __META_API_BASE = document.querySelector('meta[name="api-base"]')?.content || "";
+const API_BASE = __META_API_BASE.endsWith("/") ? __META_API_BASE.slice(0, -1) : __META_API_BASE;
+
 // DOM Elements
 const loginContainer = document.getElementById("login-container");
 const mainContainer = document.getElementById("main-container");
@@ -95,7 +99,7 @@ async function loadRecentChats() {
     <div class="text-slate-500 text-xxs italic px-3 py-2 animate-pulse">Loading chats...</div>
     `;
     try {
-        const response = await fetch("/api/chats", {
+        const response = await fetch(`${API_BASE}/api/chats`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${sessionToken}`
@@ -163,7 +167,7 @@ async function selectChatSession(sessionId) {
     });
 
     try {
-        const response = await fetch(`/api/chats/${sessionId}`, {
+        const response = await fetch(`${API_BASE}/api/chats/${sessionId}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${sessionToken}`
@@ -216,7 +220,7 @@ async function selectChatSession(sessionId) {
 async function deleteChatSession(sessionId) {
     if (!confirm("Are you sure you want to delete this chat session?")) return;
     try {
-        const response = await fetch(`/api/chats/${sessionId}`, {
+        const response = await fetch(`${API_BASE}/api/chats/${sessionId}`, {
             method: "DELETE",
             headers: {
                 "Authorization": `Bearer ${sessionToken}`
@@ -307,7 +311,7 @@ loginForm.addEventListener("submit", async (e) => {
     loginBtn.textContent = "AUTHENTICATING...";
 
     try {
-        const response = await fetch("/api/login", {
+        const response = await fetch(`${API_BASE}/api/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -358,7 +362,7 @@ chatForm.addEventListener("submit", async (e) => {
     appendLoader();
 
     try {
-        const response = await fetch("/api/chats/message", {
+        const response = await fetch(`${API_BASE}/api/chats/message`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -414,7 +418,7 @@ btnNewChat.addEventListener("click", () => {
 btnLogout.addEventListener("click", async () => {
     if (sessionToken) {
         try {
-            await fetch("/api/logout", {
+            await fetch(`${API_BASE}/api/logout`, {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${sessionToken}`
@@ -467,7 +471,7 @@ async function loadMeetings() {
     </div>
     `;
     try {
-        const response = await fetch("/api/meetings", {
+        const response = await fetch(`${API_BASE}/api/meetings`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${sessionToken}`
@@ -533,7 +537,7 @@ async function loadMeetings() {
                     `).join("")}
                 </div>
 
-                <a href="/api/meetings/${meeting.id}/ics" download
+                <a href="${API_BASE}/api/meetings/${meeting.id}/ics" download
                    class="text-xxs font-bold px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 hover:bg-cyan-500/25 hover:border-cyan-400/30 text-cyan-400 transition-all flex items-center gap-1.5 shadow-sm shadow-cyan-500/5">
                     <span>📥</span> ADD TO CALENDAR
                 </a>

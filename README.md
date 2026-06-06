@@ -1,3 +1,54 @@
+# karan_rag
+
+## Deployment (GitHub Pages)
+
+You can publish the static frontend in the `ui/` folder to GitHub Pages for free (public).
+
+Steps:
+
+1. Create a new GitHub repository (public) and push this project to it. Replace `YOUR-REPO-URL` below.
+
+```bash
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin YOUR-REPO-URL
+git push -u origin main
+```
+
+2. The repository includes a GitHub Actions workflow that will deploy the `ui/` folder to the `gh-pages` branch on every push to `main`.
+
+3. After the workflow runs, enable GitHub Pages in your repository Settings → Pages and select the `gh-pages` branch (if not already published automatically).
+
+Notes:
+- This publishes only the static frontend (`ui/`). The Python backend is not hosted on GitHub Pages. To host the full app you will need a server provider (e.g., Render, Fly, Railway) and use GitHub Actions or their integrations.
+
+### Backend on Replit (quick, free)
+
+If you want a public backend URL quickly, Replit is a simple free option for demos. Steps:
+
+1. Create an account at https://replit.com and create a new Repl (import from GitHub or upload files).
+2. Ensure `.replit` exists (this repo includes one) and `requirements.txt` contains `fastapi` and `uvicorn` (already added).
+3. In Replit, add the environment variables (Secrets) from your `.env` into the Replit Secrets UI.
+4. Run the Repl — Replit will provide a public URL in the form:
+
+```
+https://<repl-name>.<username>.repl.co
+```
+
+5. Edit `ui/index.html` and set the `api-base` meta tag to your Replit URL (no trailing slash). Example:
+
+```html
+<meta name="api-base" content="https://my-backend.myuser.repl.co">
+```
+
+6. Deploy the frontend to GitHub Pages (or host it anywhere). The UI will call the Replit backend using the configured `api-base`.
+
+Notes:
+- Replit sleeps inactive Repls on free tier — acceptable for demos. For more uptime use Render or Fly.
+- Do NOT commit your `.env` with secrets to GitHub. Use the `.env.example` and set secrets on the host.
+
 # 🤖 Karan Systems — Enterprise Agentic RAG
 **Stack:** LangChain Agents + Google Gemini + Pinecone Vector Database + Streamlit Cloud  
 **Company:** Karan Systems Pvt. Ltd.  
